@@ -1,35 +1,5 @@
-/*
-  Keyboard test
-
-  Reads a byte from the serial port, sends a keystroke back.
-  The sent keystroke is one higher than what's received, e.g. if you send a,
-  you get b, send A you get B, and so forth.
-
-  The circuit:
-  - none
-
-  created 21 Oct 2011
-  modified 27 Mar 2012
-  by Tom Igoe
-
-  This example code is in the public domain.
-
-  http://www.arduino.cc/en/Tutorial/KeyboardSerial
-*/
-
-
 //#define ARDUINO_USB_MODE 2
 //#define SOC_USB_OTG_SUPPORTED
-
-/*
-#ifndef ARDUINO_USB_MODE
-#error This ESP32 SoC has no Native USB interface
-#elif ARDUINO_USB_MODE == 1
-#warning This sketch should be used when USB is in OTG mode
-void setup() {}
-void loop() {}
-#else
-*/
 
 #include "USB.h"
 #include "USBHIDKeyboard.h"
@@ -51,25 +21,6 @@ void setup() {
     pinMode(POWER_BUTTON_PIN, OUTPUT);
     digitalWrite(POWER_BUTTON_PIN, 0);
   }
-/*
-  pinMode(17, OUTPUT);
-  pinMode(18, OUTPUT);
-  pinMode(8, OUTPUT);
-  pinMode(3, OUTPUT);
-  digitalWrite(17, 1);
-  digitalWrite(18, 1);
-  digitalWrite(8, 1);
-  digitalWrite(3, 1);
-
-  pinMode(35, OUTPUT);
-  pinMode(36, OUTPUT);
-  pinMode(37, OUTPUT);
-  pinMode(38, OUTPUT);
-  digitalWrite(35, 1);
-  digitalWrite(36, 1);
-  digitalWrite(37, 1);
-  digitalWrite(38, 1);
-  */
 
   Serial.begin(115200);
   Keyboard.begin();
@@ -165,4 +116,4 @@ void loop() {
         }
     }
 }
-//#endif /* ARDUINO_USB_MODE */
+
