@@ -37,13 +37,15 @@ namespace HadwareRemoteControl
             toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             tsbCameras = new System.Windows.Forms.ToolStripDropDownButton();
+            toolStripLabel3 = new System.Windows.Forms.ToolStripLabel();
+            tsbFormat = new System.Windows.Forms.ToolStripDropDownButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             toolStripLabel2 = new System.Windows.Forms.ToolStripLabel();
             tsCom = new System.Windows.Forms.ToolStripDropDownButton();
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             tsbOther = new System.Windows.Forms.ToolStripDropDownButton();
-            tsbReboot = new System.Windows.Forms.ToolStripMenuItem();
             powerOffToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            tsbReboot = new System.Windows.Forms.ToolStripMenuItem();
             toolStripMenuItem3 = new System.Windows.Forms.ToolStripSeparator();
             pasteClipboardTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             toolStripMenuItem2 = new System.Windows.Forms.ToolStripSeparator();
@@ -61,6 +63,7 @@ namespace HadwareRemoteControl
             tsDebugFormat = new System.Windows.Forms.ToolStripLabel();
             tsbDebugSerial = new System.Windows.Forms.ToolStripLabel();
             bwEnterText = new System.ComponentModel.BackgroundWorker();
+            bgFrameProcessing = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
             tsMain.SuspendLayout();
             SuspendLayout();
@@ -82,7 +85,7 @@ namespace HadwareRemoteControl
             // 
             // tsMain
             // 
-            tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnConnect, btnDisconnect, toolStripSeparator4, toolStripLabel1, tsbCameras, toolStripSeparator1, toolStripLabel2, tsCom, toolStripSeparator2, tsbOther, toolStripSeparator3, toolStripLabel5, tsDisplayType, tsDebug, tsDebugFormat, tsbDebugSerial });
+            tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnConnect, btnDisconnect, toolStripSeparator4, toolStripLabel1, tsbCameras, toolStripLabel3, tsbFormat, toolStripSeparator1, toolStripLabel2, tsCom, toolStripSeparator2, tsbOther, toolStripSeparator3, toolStripLabel5, tsDisplayType, tsDebug, tsDebugFormat, tsbDebugSerial });
             tsMain.Location = new System.Drawing.Point(0, 0);
             tsMain.Name = "tsMain";
             tsMain.Size = new System.Drawing.Size(1039, 25);
@@ -128,6 +131,21 @@ namespace HadwareRemoteControl
             tsbCameras.Tag = "0";
             tsbCameras.Text = "Camera 1";
             // 
+            // toolStripLabel3
+            // 
+            toolStripLabel3.Name = "toolStripLabel3";
+            toolStripLabel3.Size = new System.Drawing.Size(82, 22);
+            toolStripLabel3.Text = "Prefer Format:";
+            // 
+            // tsbFormat
+            // 
+            tsbFormat.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            tsbFormat.Image = (System.Drawing.Image)resources.GetObject("tsbFormat.Image");
+            tsbFormat.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsbFormat.Name = "tsbFormat";
+            tsbFormat.Size = new System.Drawing.Size(59, 22);
+            tsbFormat.Text = "Default";
+            // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
@@ -163,14 +181,6 @@ namespace HadwareRemoteControl
             tsbOther.Text = "Other";
             tsbOther.ToolTipText = " ";
             // 
-            // tsbReboot
-            // 
-            tsbReboot.Image = (System.Drawing.Image)resources.GetObject("tsbReboot.Image");
-            tsbReboot.Name = "tsbReboot";
-            tsbReboot.Size = new System.Drawing.Size(181, 22);
-            tsbReboot.Text = "Reboot";
-            tsbReboot.Click += tsbReboot_Click;
-            // 
             // powerOffToolStripMenuItem
             // 
             powerOffToolStripMenuItem.Image = (System.Drawing.Image)resources.GetObject("powerOffToolStripMenuItem.Image");
@@ -178,6 +188,14 @@ namespace HadwareRemoteControl
             powerOffToolStripMenuItem.Size = new System.Drawing.Size(181, 22);
             powerOffToolStripMenuItem.Text = "Power On/Off";
             powerOffToolStripMenuItem.Click += powerOffToolStripMenuItem_Click;
+            // 
+            // tsbReboot
+            // 
+            tsbReboot.Image = (System.Drawing.Image)resources.GetObject("tsbReboot.Image");
+            tsbReboot.Name = "tsbReboot";
+            tsbReboot.Size = new System.Drawing.Size(181, 22);
+            tsbReboot.Text = "Reboot";
+            tsbReboot.Click += tsbReboot_Click;
             // 
             // toolStripMenuItem3
             // 
@@ -297,6 +315,10 @@ namespace HadwareRemoteControl
             // 
             bwEnterText.DoWork += bwEnterText_DoWork;
             // 
+            // bgFrameProcessing
+            // 
+            bgFrameProcessing.DoWork += bgFrameProcessing_DoWork;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
@@ -354,6 +376,9 @@ namespace HadwareRemoteControl
         private System.Windows.Forms.ToolStripMenuItem powerOffToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripMenuItem3;
         private System.Windows.Forms.ToolStripMenuItem sendWinLButton;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel3;
+        private System.Windows.Forms.ToolStripDropDownButton tsbFormat;
+        private System.ComponentModel.BackgroundWorker bgFrameProcessing;
     }
 }
 

@@ -21,6 +21,8 @@ using System.Collections.Concurrent;
 using System.Xml;
 using System.IO;
 using System.Runtime.InteropServices;
+using AForge.Video.DirectShow.Internals;
+using Emgu.CV.Dai;
 
 namespace HadwareRemoteControl
 {
@@ -73,6 +75,8 @@ namespace HadwareRemoteControl
         Point btScreenLocation = new Point();
         bool MouseCaptured = false;
         int[] Keymap = InitKeymap();
+        Bitmap FrameInQueue = null;
+        AutoResetEvent FrameWait = new AutoResetEvent(false);
 
         TransformationData transformationData = new();
 
@@ -202,6 +206,39 @@ namespace HadwareRemoteControl
                 tsCom.DropDownItems.Add(btn);
             }
 
+            Dictionary<string, Guid> Formats = new Dictionary<string, Guid> {
+                { "Default", Guid.Empty },
+                { "RGB24", MediaSubType.RGB24 },
+                { "MJpeg", MediaSubType.MJpeg },
+                { "NV12", MediaSubType.NV12 },
+                { "YUY2", MediaSubType.YUY2 },
+                { "YUYV", MediaSubType.YUYV },
+                { "I420", MediaSubType.I420 },
+            };
+            string SelectedFormat = settingsValue["format"];
+            foreach (var FormatPair in Formats)
+            {
+                ToolStripMenuItem btn = new ToolStripMenuItem($"{FormatPair.Key}");
+                btn.Tag = FormatPair.Value;
+                btn.Click += (sender, e) =>
+                {
+                    if (sender is ToolStripMenuItem item)
+                    {
+                        tsbFormat.Text = item.Text;
+                        tsbFormat.Tag = item.Tag;
+                        settingsValue["format"] = item.Text;
+                    }
+                };
+
+                if (SelectedFormat == btn.Text)
+                {
+                    tsbFormat.Text = btn.Text;
+                    tsbFormat.Tag = btn.Tag;
+                }
+                tsbFormat.DropDownItems.Add(btn);
+            }
+
+
             if (settingsValue["screen"].ToInt32() == 1)
             {
                 screenTypeToolStripMenuItem_Click(scrollToolStripMenuItem, new EventArgs());
@@ -214,7 +251,7 @@ namespace HadwareRemoteControl
                 transformationData.destPoints[i].Y = settingsValue[$"transformPoint{i}Y"].ToFloat();
             }
 
-
+            bgFrameProcessing.RunWorkerAsync();
             bwEnterText.RunWorkerAsync();
         }
 
@@ -234,6 +271,16 @@ namespace HadwareRemoteControl
             return selected;
         }
 
+        private void DumpVideoCapabilities(VideoCapabilities[] list)
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            foreach (var cap in list)
+            {
+                stringBuilder.AppendLine($"{cap.FrameSize.Width}x{cap.FrameSize.Height}r{cap.AverageFrameRate}");
+            }
+            File.WriteAllText("./videocap.txt", stringBuilder.ToString());
+        }
+
         private void btnConnect_Click(object sender, EventArgs e)
         {
             if (tsbCameras.Tag is FilterInfo fi)
@@ -244,17 +291,25 @@ namespace HadwareRemoteControl
                 DateTime LastUpdate = DateTime.Now;
                 videoDevice.NewFrame += (sender, e) =>
                 {
-                    Invoke(new Action(() =>
+                    lock (FrameWait)
                     {
+                        FrameInQueue = (Bitmap)e.Frame.Clone();
+                        FrameWait.Set();
+                    }
+                    //Invoke(new Action(() =>
+                    //{
+                        
+                        /*
                         //pbScreen.Image = 
-                        if ((DateTime.Now - LastUpdate).TotalMilliseconds > 50 || !transformationData.UseTransform)
+                        if ((DateTime.Now - LastUpdate).TotalMilliseconds > 50 || (!transformationData.UseTransform && (DateTime.Now - LastUpdate).TotalMilliseconds > 25))
                         {
                             LastUpdate = DateTime.Now;
                             btSource = (Bitmap)e.Frame.Clone();
                             btScreen = transformationData.DoTransformation(btSource);
                             pbScreen.Refresh();
                         }
-                    }));
+                        */
+                    //}));
                     //tsDebug .Text = $"{pbScreen.Image.Width}";
                 };
                 videoDevice.VideoSourceError += (sender, e) =>
@@ -274,7 +329,16 @@ namespace HadwareRemoteControl
                         }
                     }));
                 };
-                videoDevice.PreferJpegEncoding = true;
+                if (tsbFormat.Tag is Guid g)
+                {
+                    videoDevice.PreferEncoding = g;
+                }
+                else
+                {
+                    videoDevice.PreferEncoding = Guid.Empty;
+                }
+                tsDebugFormat.Text = "";
+                //DumpVideoCapabilities(videoCapabilities);
                 videoDevice.VideoResolution = GetBestVideo(videoCapabilities);
                 videoDevice.Start();
 
@@ -329,6 +393,7 @@ namespace HadwareRemoteControl
         {
             btnConnect.Enabled = !Connected;
             tsbCameras.Enabled = !Connected;
+            tsbFormat.Enabled = !Connected;
             tsCom.Enabled = !Connected;
             btnDisconnect.Enabled = Connected;
             tsbOther.Enabled = Connected;
@@ -835,6 +900,26 @@ namespace HadwareRemoteControl
             SendSerial($"KD:{(int)HIDKeys.HID_KEY_L}", KeySleepTime);
             SendSerial($"KU:{(int)HIDKeys.HID_KEY_L}", 0);
             SendSerial($"KU:{(int)HIDKeys.HID_KEY_GUI_LEFT}", KeySleepTime);
+        }
+
+        private void bgFrameProcessing_DoWork(object sender, DoWorkEventArgs e)
+        {
+            while (FrameWait.WaitOne())
+            {
+                Bitmap inFrame = null;
+                lock (FrameWait)
+                {
+                    inFrame = FrameInQueue;
+                    FrameInQueue = null;
+                }
+
+                Invoke(new Action(() =>
+                {
+                    btSource = inFrame;
+                    btScreen = transformationData.DoTransformation(btSource);
+                    pbScreen.Refresh();
+                }));
+            }
         }
     }
 }
