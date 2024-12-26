@@ -77,6 +77,7 @@ namespace HadwareRemoteControl
         int[] Keymap = InitKeymap();
         Bitmap FrameInQueue = null;
         AutoResetEvent FrameWait = new AutoResetEvent(false);
+        DateTime FrameTime = default;
 
         TransformationData transformationData = new();
 
@@ -295,7 +296,9 @@ namespace HadwareRemoteControl
                     {
                         FrameInQueue = (Bitmap)e.Frame.Clone();
                         FrameWait.Set();
+                        FrameTime = DateTime.Now;
                     }
+                    e.Frame.Dispose();
                     //Invoke(new Action(() =>
                     //{
                         
@@ -857,7 +860,7 @@ namespace HadwareRemoteControl
 
         private void transformImageToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            FormImageTransform.ShowForm(this, transformationData, btSource);
+            FormImageTransform.ShowForm(this, transformationData, (Bitmap)btSource.Clone());
             settingsValue["transform"] = transformationData.UseTransform ? "1" : "0";
             for (int i = 0; i < 4; i++)
             {
@@ -915,10 +918,21 @@ namespace HadwareRemoteControl
 
                 Invoke(new Action(() =>
                 {
+                    if (btSource != null)
+                    {
+                        btSource.Dispose();
+                        btSource = null;
+                    }
                     btSource = inFrame;
+                    if (btScreen != null)
+                    {
+                        btScreen.Dispose();
+                        btScreen = null;
+                    }
                     btScreen = transformationData.DoTransformation(btSource);
                     pbScreen.Refresh();
                 }));
+                //Debug.Print($"FrameTime: {(DateTime.Now - FrameTime).TotalMilliseconds}ms\r\n");
             }
         }
     }

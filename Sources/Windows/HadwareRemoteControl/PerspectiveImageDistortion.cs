@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Reg;
 using Emgu.CV.Structure;
 
 namespace HadwareRemoteControl
@@ -37,6 +38,7 @@ namespace HadwareRemoteControl
                 return ImageTransform.PerspectiveImageDistortion(sourceImage, destPoints);
                 //return sourceImage;//
             }
+            //ImageTransform.PerspectiveImageDistortion(sourceImage, destPoints);
             return sourceImage;
         }
     }
@@ -48,10 +50,10 @@ namespace HadwareRemoteControl
             if (destPoints.Length != 4)
                 throw new ArgumentException("Destination points array must contain exactly 4 points.");
 
-            // Convert source image to Mat
-            Mat srcMat = BitmapToMat(sourceImage);
 
-            // Define the source points (corners of the source image)
+            using Image<Bgr, Byte> image = sourceImage.ToImage<Bgr, Byte>();
+            using Mat srcMat = image.Mat;
+
             PointF[] srcPoints =
             [
                 new(0, 0),
@@ -60,24 +62,24 @@ namespace HadwareRemoteControl
                 new(0, sourceImage.Height - 1)
             ];
 
-            // Get the perspective transformation matrix
-            Mat perspectiveMatrix = CvInvoke.GetPerspectiveTransform(srcPoints, destPoints);
+            using Mat perspectiveMatrix = CvInvoke.GetPerspectiveTransform(srcPoints, destPoints);
 
-            // Apply the perspective transformation
-            Mat destMat = new();
+            using Mat destMat = new();
             CvInvoke.WarpPerspective(srcMat, destMat, perspectiveMatrix, new Size(sourceImage.Width, sourceImage.Height), Inter.Linear, Warp.Default, BorderType.Constant, new MCvScalar(0, 0, 0));
 
-            // Convert resulting Mat back to Bitmap
-            Bitmap resultBitmap = destMat.ToBitmap(); // Using ToBitmap method
+            Bitmap resultBitmap = destMat.ToBitmap();
 
             return resultBitmap;
+            //return null;
         }
 
+        /*
         private static Mat BitmapToMat(Bitmap bitmap)
         {
             // Convert Bitmap to Image<Bgr, Byte>
             Image<Bgr, Byte> image = bitmap.ToImage<Bgr, Byte>();
             return image.Mat;
         }
+        //*/
     }
 }

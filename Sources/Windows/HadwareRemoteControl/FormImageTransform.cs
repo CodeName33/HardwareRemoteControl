@@ -41,6 +41,7 @@ namespace HadwareRemoteControl
             {
                 form.ShowDialog(parent);
             }
+            source.Dispose();
         }
 
         private void pbScreen_MouseWheel(object sender, MouseEventArgs e)
