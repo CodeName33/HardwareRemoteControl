@@ -23,6 +23,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using AForge.Video.DirectShow.Internals;
 using Emgu.CV.Dai;
+using AForge.Video;
 
 namespace HadwareRemoteControl
 {
@@ -76,6 +77,7 @@ namespace HadwareRemoteControl
         bool MouseCaptured = false;
         int[] Keymap = InitKeymap();
         Bitmap FrameInQueue = null;
+        NewRawFrameEventArgs RawFrameInQueue = null;
         AutoResetEvent FrameWait = new AutoResetEvent(false);
         DateTime FrameTime = default;
 
@@ -259,6 +261,10 @@ namespace HadwareRemoteControl
         private VideoCapabilities GetBestVideo(VideoCapabilities[] list)
         {
             int Value = 0;
+            if (list.Length == 0)
+            {
+                return null;
+            }
             VideoCapabilities selected = list.Last();
             foreach (var cap in list)
             {
@@ -290,31 +296,39 @@ namespace HadwareRemoteControl
                 var videoCapabilities = videoDevice.VideoCapabilities;
                 var snapshotCapabilities = videoDevice.SnapshotCapabilities;
                 DateTime LastUpdate = DateTime.Now;
-                videoDevice.NewFrame += (sender, e) =>
-                {
+                videoDevice.NewRawFrame += (sender, e) => { 
+                    lock (FrameWait)
+                    {
+                        RawFrameInQueue = e;
+                        FrameWait.Set();
+                        //FrameTime = DateTime.Now;
+                    }
+                };
+                //videoDevice.NewFrame += (sender, e) =>
+                //{
+                    /*
                     lock (FrameWait)
                     {
                         FrameInQueue = (Bitmap)e.Frame.Clone();
                         FrameWait.Set();
-                        FrameTime = DateTime.Now;
+                        //FrameTime = DateTime.Now;
                     }
-                    e.Frame.Dispose();
-                    //Invoke(new Action(() =>
-                    //{
+                    //*/
+
+                    /*
+                    Invoke(new Action(() =>
+                    {
                         
-                        /*
-                        //pbScreen.Image = 
-                        if ((DateTime.Now - LastUpdate).TotalMilliseconds > 50 || (!transformationData.UseTransform && (DateTime.Now - LastUpdate).TotalMilliseconds > 25))
+                        if ((DateTime.Now - LastUpdate).TotalMilliseconds > 50 || (!transformationData.UseTransform && (DateTime.Now - LastUpdate).TotalMilliseconds > 50))
                         {
                             LastUpdate = DateTime.Now;
                             btSource = (Bitmap)e.Frame.Clone();
                             btScreen = transformationData.DoTransformation(btSource);
                             pbScreen.Refresh();
                         }
-                        */
-                    //}));
+                    }));//*/
                     //tsDebug .Text = $"{pbScreen.Image.Width}";
-                };
+                //};
                 videoDevice.VideoSourceError += (sender, e) =>
                 {
                     Invoke(new Action(() =>
@@ -343,6 +357,11 @@ namespace HadwareRemoteControl
                 tsDebugFormat.Text = "";
                 //DumpVideoCapabilities(videoCapabilities);
                 videoDevice.VideoResolution = GetBestVideo(videoCapabilities);
+                if (videoDevice.VideoResolution == null)
+                {
+                    MessageBox.Show(this, "Can't select video resolution", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
                 videoDevice.Start();
 
                 serialPort = new SerialPort();
@@ -827,6 +846,9 @@ namespace HadwareRemoteControl
             if (btScreen != null)
             {
                 int Type = tsDisplayType.Tag.ToString().ToInt32();
+                //e.Graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighSpeed;
+                //e.Graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.NearestNeighbor;
+                //e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighSpeed;
                 if (Type == 0)
                 {
                     int ImageX = 0;
@@ -909,30 +931,40 @@ namespace HadwareRemoteControl
         {
             while (FrameWait.WaitOne())
             {
-                Bitmap inFrame = null;
+                FrameTime = DateTime.Now;
+                //Bitmap inFrame = null;
+                NewRawFrameEventArgs inFrame;
                 lock (FrameWait)
                 {
-                    inFrame = FrameInQueue;
-                    FrameInQueue = null;
+                    //inFrame = FrameInQueue;
+                    //FrameInQueue = null;
+                    inFrame = RawFrameInQueue;
+                    RawFrameInQueue = null;
                 }
+
+                var source = FormatsDecoder.Decode(inFrame.Frame, inFrame.FormatSubtype, inFrame.Width, inFrame.Height);
 
                 Invoke(new Action(() =>
                 {
+                    //*
                     if (btSource != null)
                     {
                         btSource.Dispose();
                         btSource = null;
                     }
-                    btSource = inFrame;
+                    //*/
+                    btSource = source;
+                    //*
                     if (btScreen != null)
                     {
                         btScreen.Dispose();
                         btScreen = null;
                     }
+                    //*/
                     btScreen = transformationData.DoTransformation(btSource);
                     pbScreen.Refresh();
                 }));
-                //Debug.Print($"FrameTime: {(DateTime.Now - FrameTime).TotalMilliseconds}ms\r\n");
+                Debug.Print($"FrameTime: {(DateTime.Now - FrameTime).TotalMilliseconds}ms\r\n");
             }
         }
     }
