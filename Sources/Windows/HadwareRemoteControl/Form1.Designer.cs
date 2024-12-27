@@ -62,6 +62,7 @@ namespace HadwareRemoteControl
             tsDebug = new System.Windows.Forms.ToolStripLabel();
             tsDebugFormat = new System.Windows.Forms.ToolStripLabel();
             tsbDebugSerial = new System.Windows.Forms.ToolStripLabel();
+            tsbFullScreen = new System.Windows.Forms.ToolStripButton();
             bwEnterText = new System.ComponentModel.BackgroundWorker();
             bgFrameProcessing = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)pbScreen).BeginInit();
@@ -85,7 +86,7 @@ namespace HadwareRemoteControl
             // 
             // tsMain
             // 
-            tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnConnect, btnDisconnect, toolStripSeparator4, toolStripLabel1, tsbCameras, toolStripLabel3, tsbFormat, toolStripSeparator1, toolStripLabel2, tsCom, toolStripSeparator2, tsbOther, toolStripSeparator3, toolStripLabel5, tsDisplayType, tsDebug, tsDebugFormat, tsbDebugSerial });
+            tsMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnConnect, btnDisconnect, toolStripSeparator4, toolStripLabel1, tsbCameras, toolStripLabel3, tsbFormat, toolStripSeparator1, toolStripLabel2, tsCom, toolStripSeparator2, tsbOther, toolStripSeparator3, toolStripLabel5, tsDisplayType, tsDebug, tsDebugFormat, tsbDebugSerial, tsbFullScreen });
             tsMain.Location = new System.Drawing.Point(0, 0);
             tsMain.Name = "tsMain";
             tsMain.Size = new System.Drawing.Size(1039, 25);
@@ -311,6 +312,16 @@ namespace HadwareRemoteControl
             tsbDebugSerial.Name = "tsbDebugSerial";
             tsbDebugSerial.Size = new System.Drawing.Size(0, 22);
             // 
+            // tsbFullScreen
+            // 
+            tsbFullScreen.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            tsbFullScreen.Image = (System.Drawing.Image)resources.GetObject("tsbFullScreen.Image");
+            tsbFullScreen.ImageTransparentColor = System.Drawing.Color.Magenta;
+            tsbFullScreen.Name = "tsbFullScreen";
+            tsbFullScreen.Size = new System.Drawing.Size(23, 22);
+            tsbFullScreen.Text = "FullScreen";
+            tsbFullScreen.Click += tsbFullScreen_Click;
+            // 
             // bwEnterText
             // 
             bwEnterText.DoWork += bwEnterText_DoWork;
@@ -379,6 +390,7 @@ namespace HadwareRemoteControl
         private System.Windows.Forms.ToolStripLabel toolStripLabel3;
         private System.Windows.Forms.ToolStripDropDownButton tsbFormat;
         private System.ComponentModel.BackgroundWorker bgFrameProcessing;
+        private System.Windows.Forms.ToolStripButton tsbFullScreen;
     }
 }
 

@@ -287,7 +287,6 @@ namespace HadwareRemoteControl
             }
             File.WriteAllText("./videocap.txt", stringBuilder.ToString());
         }
-
         private void btnConnect_Click(object sender, EventArgs e)
         {
             if (tsbCameras.Tag is FilterInfo fi)
@@ -296,7 +295,8 @@ namespace HadwareRemoteControl
                 var videoCapabilities = videoDevice.VideoCapabilities;
                 var snapshotCapabilities = videoDevice.SnapshotCapabilities;
                 DateTime LastUpdate = DateTime.Now;
-                videoDevice.NewRawFrame += (sender, e) => { 
+                videoDevice.NewRawFrame += (sender, e) =>
+                {
                     lock (FrameWait)
                     {
                         RawFrameInQueue = e;
@@ -306,28 +306,28 @@ namespace HadwareRemoteControl
                 };
                 //videoDevice.NewFrame += (sender, e) =>
                 //{
-                    /*
-                    lock (FrameWait)
-                    {
-                        FrameInQueue = (Bitmap)e.Frame.Clone();
-                        FrameWait.Set();
-                        //FrameTime = DateTime.Now;
-                    }
-                    //*/
+                /*
+                lock (FrameWait)
+                {
+                    FrameInQueue = (Bitmap)e.Frame.Clone();
+                    FrameWait.Set();
+                    //FrameTime = DateTime.Now;
+                }
+                //*/
 
-                    /*
-                    Invoke(new Action(() =>
+                /*
+                Invoke(new Action(() =>
+                {
+
+                    if ((DateTime.Now - LastUpdate).TotalMilliseconds > 50 || (!transformationData.UseTransform && (DateTime.Now - LastUpdate).TotalMilliseconds > 50))
                     {
-                        
-                        if ((DateTime.Now - LastUpdate).TotalMilliseconds > 50 || (!transformationData.UseTransform && (DateTime.Now - LastUpdate).TotalMilliseconds > 50))
-                        {
-                            LastUpdate = DateTime.Now;
-                            btSource = (Bitmap)e.Frame.Clone();
-                            btScreen = transformationData.DoTransformation(btSource);
-                            pbScreen.Refresh();
-                        }
-                    }));//*/
-                    //tsDebug .Text = $"{pbScreen.Image.Width}";
+                        LastUpdate = DateTime.Now;
+                        btSource = (Bitmap)e.Frame.Clone();
+                        btScreen = transformationData.DoTransformation(btSource);
+                        pbScreen.Refresh();
+                    }
+                }));//*/
+                //tsDebug .Text = $"{pbScreen.Image.Width}";
                 //};
                 videoDevice.VideoSourceError += (sender, e) =>
                 {
@@ -936,36 +936,56 @@ namespace HadwareRemoteControl
                 NewRawFrameEventArgs inFrame;
                 lock (FrameWait)
                 {
-                    //inFrame = FrameInQueue;
-                    //FrameInQueue = null;
+                    if (RawFrameInQueue == null)
+                    {
+                        continue;
+                    }
                     inFrame = RawFrameInQueue;
                     RawFrameInQueue = null;
                 }
 
                 var source = FormatsDecoder.Decode(inFrame.Frame, inFrame.FormatSubtype, inFrame.Width, inFrame.Height);
 
-                Invoke(new Action(() =>
+                if (source != null)
                 {
-                    //*
-                    if (btSource != null)
+                    Invoke(new Action(() =>
                     {
-                        btSource.Dispose();
-                        btSource = null;
-                    }
-                    //*/
-                    btSource = source;
-                    //*
-                    if (btScreen != null)
-                    {
-                        btScreen.Dispose();
-                        btScreen = null;
-                    }
-                    //*/
-                    btScreen = transformationData.DoTransformation(btSource);
-                    pbScreen.Refresh();
-                }));
-                Debug.Print($"FrameTime: {(DateTime.Now - FrameTime).TotalMilliseconds}ms\r\n");
+                        if (btSource != null)
+                        {
+                            btSource.Dispose();
+                            btSource = null;
+                        }
+                        btSource = source;
+                        if (btScreen != null)
+                        {
+                            btScreen.Dispose();
+                            btScreen = null;
+                        }
+                        btScreen = transformationData.DoTransformation(btSource);
+                        pbScreen.Refresh();
+                    }));
+                    //Debug.Print($"FrameTime: {(DateTime.Now - FrameTime).TotalMilliseconds}ms\r\n");
+                }
             }
+        }
+
+        private void tsbFullScreen_Click(object sender, EventArgs e)
+        {
+            if (tsbFullScreen.Checked)
+            {
+                this.TopMost = false;
+                this.FormBorderStyle = FormBorderStyle.Sizable;
+            }
+            else
+            {
+                Screen screen = Screen.FromControl(this);
+                this.WindowState = FormWindowState.Normal;
+                this.TopMost = true;
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Bounds = screen.Bounds;
+            }
+
+            tsbFullScreen.Checked = !tsbFullScreen.Checked;
         }
     }
 }

@@ -409,12 +409,13 @@ namespace HadwareRemoteControl
                 {
                     try
                     {
-                        unsafe
-                        {
-                            
-                            image = (Bitmap)Bitmap.FromStream(new MemoryStream(frame));
+                            using (var ms = new MemoryStream(frame))
+                            {
+                                image = new Bitmap(ms);
+                            }
+
+                            //image = (Bitmap)Bitmap.FromStream(new MemoryStream(frame));
                                 //new UnmanagedMemoryStream((byte*)buffer.ToPointer(), bufferLen));
-                        }
                     }
                     catch { }
                 }
