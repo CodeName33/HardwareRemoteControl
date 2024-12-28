@@ -73,9 +73,10 @@ namespace HadwareRemoteControl
             // 
             pbScreen.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             pbScreen.BackColor = System.Drawing.Color.Black;
-            pbScreen.Location = new System.Drawing.Point(4, 29);
+            pbScreen.Location = new System.Drawing.Point(0, 25);
+            pbScreen.Margin = new System.Windows.Forms.Padding(0);
             pbScreen.Name = "pbScreen";
-            pbScreen.Size = new System.Drawing.Size(1031, 662);
+            pbScreen.Size = new System.Drawing.Size(1039, 671);
             pbScreen.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             pbScreen.TabIndex = 1;
             pbScreen.TabStop = false;

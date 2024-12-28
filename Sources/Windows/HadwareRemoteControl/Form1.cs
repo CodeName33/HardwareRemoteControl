@@ -969,19 +969,22 @@ namespace HadwareRemoteControl
             }
         }
 
+        Rectangle savedBounds = new Rectangle();
         private void tsbFullScreen_Click(object sender, EventArgs e)
         {
             if (tsbFullScreen.Checked)
             {
-                this.TopMost = false;
+                //this.TopMost = false;
                 this.FormBorderStyle = FormBorderStyle.Sizable;
+                this.Bounds = savedBounds;
             }
             else
             {
                 Screen screen = Screen.FromControl(this);
                 this.WindowState = FormWindowState.Normal;
-                this.TopMost = true;
+                //this.TopMost = true;
                 this.FormBorderStyle = FormBorderStyle.None;
+                savedBounds = this.Bounds;
                 this.Bounds = screen.Bounds;
             }
 
