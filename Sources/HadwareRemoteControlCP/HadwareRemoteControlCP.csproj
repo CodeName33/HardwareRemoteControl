@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PublishAot>False</PublishAot>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Configurations>Debug;Release;ReleaseNonNative</Configurations>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Citms.OpenCvSharp4.runtime.linux-ubuntu20.04-arm64" Version="4.9.0" />
+    <PackageReference Include="GtkSharp" Version="3.24.24.95" />
+    <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
+    <PackageReference Include="OpencvSharp4.runtime.linux-arm" Version="4.10.0.20241107" />
+    <PackageReference Include="OpenCvSharp4.runtime.linux-arm64.cuda" Version="4.5.2.20210803" />
+    <PackageReference Include="OpencvSharp4.runtime.linux-x64" Version="4.10.0.20240717" />
+    <PackageReference Include="OpencvSharp4.runtime.win" Version="4.10.0.20241108" />
+    <PackageReference Include="System.IO.Ports" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="HadwareRemoteControlCP.htm">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>HardwareRemoteControl</title>
+        <meta charset="utf-8">
+        <style>
+            @font-face {
+                font-family: "main";
+                src: url(data:font/woff;base64,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);
+            }
+            
+            body, div, td, input, textarea, select {
+                font-family: "main", sans;
+                font-size: 12px;
+            }
+            body { 
+                margin: 0;
+                padding: 0;
+                width: 100vw;
+                height: 100vh;
+                max-width: 100vw;
+                max-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                background-color: #222E35;
+                color: #eee;
+            }
+            .toolbar {
+                display: flex;
+                align-items: center;
+                gap: 0.4em;
+                padding: 0.4em;
+            }
+            .screen-area[type='stretch']  {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow-y: auto;
+            }
+            .screen-area[type='stretch'] .screen {
+                border: solid 2px #33444E;
+                align-self: center;
+                max-width: calc(100vw - 2em);
+                height: fit-content;
+                max-height: calc(100vh - 3em);
+            }
+
+            .screen-area[type='scroll']  {
+                flex-grow: 1;
+                display: flex;
+                align-items: center;
+                justify-content: flex-start;
+                overflow-y: auto;
+            }
+            .screen-area[type='scroll'] .screen {
+                border: solid 2px #33444E;
+                align-self: baseline;
+                min-width: 1920px;
+            }
+
+            .hidden-v {
+                /*
+                max-width: 0px;
+                max-height: 0px;
+                width: 0px;
+                height: 0px;
+                overflow: hidden;
+                */
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                width: 100vw;
+                height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background-color: rgba(0, 0, 0, 0.7);
+            }
+
+            .window {
+                background-color: #222E35;
+                border: solid 2px #33444E;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                width: 50vw;
+                height: 50vh;
+                padding: 0.5em;
+            }
+
+            .hidden-v textarea {
+                background-color: #222E35;
+                border: solid 2px #33444E;
+                outline: none;
+                color: #eee;
+                
+                align-self: stretch;
+                flex-grow: 1;
+            }
+            .hidden {
+                display: none;
+            }
+            .grow {
+                flex-grow: 1;
+            }
+            .filled {
+                background-color: #222E35;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="toolbar">
+            <div class="text">Display:</div>
+            <select id = "display-type">
+                <option value="stretch" selected>Stretch</option>
+                <option value="scroll">Scroll</option>
+            </select>
+            <div class="separator"></div>
+            <div class="text">Send Keystokes:</div>
+            <select id = "send-type">
+                <option value="16,17,46" selected>Alt+Ctrl+Del</option>
+                <option value="16,17,27">Ctrl+Shift+Esc</option>
+                <option value="91,76">Win+L</option>
+                <option value=":clip:">Clipboard Text</option>
+            </select>
+            <input type="button" id="send" value="Send">
+			<div class="separator"></div>
+            <div class="text">Traffic:</div>
+			<div class="text" id="traffic"></div>
+        </div>
+        <div class="screen-area" id="screen-area" type="stretch">
+            <!--<img class="screen" id="screen" src="/stream" oncontextmenu="return false;">-->
+			<canvas id="screen" class="screen" oncontextmenu="return false;"></canvas>
+        </div>
+        <div id="paste-container" class="hidden">
+            <div class="window">
+                <textarea id="paste"></textarea>
+                <div class="toolbar filled" style="width: 50vw"><div class="text grow">Enter text or paste from clipboard</div><input type="button" id="do-paste" value="Paste"></div>
+            </div>
+        </div>
+        <script>
+            var displayType = "stretch";
+            var scrollSize = getScrollbarWidth() + 5;
+            document.getElementById('screen').ondragstart = function() { return false; };
+            document.getElementById('screen').onmousedown = function(e) {
+                var coords = getCoords(e);
+                sendSerial("MD:" + getButton(e) + "," + coords.x + "," + coords.y);
+            }
+            document.getElementById('screen').onmousemove = function(e) {
+                var coords = getCoords(e);
+                sendSerial("MM:" + coords.x + "," + coords.y);
+                if (displayType == "scroll") {
+                    var rect = e.target.getBoundingClientRect();
+                    var parentRect = e.target.parentElement.getBoundingClientRect();
+                    var hDiff = rect.height - parentRect.height + scrollSize;
+                    var vDiff = rect.width - parentRect.width + scrollSize;
+                    if (hDiff > 0) {
+                        var y = e.clientY - parentRect.top;
+                        e.target.parentElement.scrollTop = y / parentRect.height * hDiff;
+                    }
+                    if (vDiff > 0) {
+                        var x = e.clientX - parentRect.left;
+                        e.target.parentElement.scrollLeft = x / parentRect.width * vDiff;
+                    }
+                    //console.log(hDiff);
+                }
+            }
+            document.getElementById('screen').onmouseup = function(e) {
+                var coords = getCoords(e);
+                sendSerial("MU:" + getButton(e) + "," + coords.x + "," + coords.y);
+            }
+            document.getElementById('screen').onwheel = function(e) {
+                var value = e.deltaX == 0 ? 0 : (e.deltaX / Math.abs(e.deltaX));
+                value = e.deltaY == 0 ? value : (e.deltaY / Math.abs(e.deltaY));
+                sendSerial("MW:" + Math.floor(-value));
+            }
+
+            window.onkeydown = function(e) {
+                if (e.target.getAttribute("id") == "paste") {
+                    return;
+                }
+                var keyCode = convertKey(e);
+                if (keyCode != 0) {
+                    sendSerial("KD:" + keyCode);
+                }
+                console.log(e);
+                return false;
+            }
+            window.onkeyup = function(e) {
+                if (e.target.getAttribute("id") == "paste") {
+                    return;
+                }
+                var keyCode = convertKey(e);
+                if (keyCode != 0) {
+                    sendSerial("KU:" + keyCode);
+                }
+                return false;
+            }
+            document.getElementById('display-type').onchange = function(e) {
+                displayType = document.getElementById('display-type').value;
+                document.getElementById('screen-area').setAttribute("type", displayType);
+            }
+            document.getElementById('display-type').onchange();
+
+            document.getElementById('send').onclick = async function(e) {
+                var value = document.getElementById('send-type').value;
+                if (value == ":clip:") {
+                    const text =  await getClipboardText();//navigator.clipboard.readText();
+                    var shift = false;
+                    var n = 0;
+                    for (let c of text) {
+                        var keyChar = convertChar(c);
+                        if (keyChar != null) {
+                            var cshift = "shift" in keyChar ? keyChar.shift : false;
+                            if (cshift != shift) {
+                                sendSerial((cshift ? "KD:" : "KU:") + HID_KEY_SHIFT_LEFT);
+                                shift = cshift;
+                            }
+                            sendSerial("KD:" + keyChar.key);
+                            sendSerial("KU:" + keyChar.key);
+                            if (n % 3 == 0) {
+                                await timeout(20);
+                            }
+                            n++;
+                        }
+                    }
+                    if (shift) {
+                        sendSerial("KU:" + HID_KEY_SHIFT_LEFT);
+                    }
+                    //alert(text);
+                } else {
+                    var keys = value.split(",");
+                    for (let key of keys) {
+                        sendSerial("KD:" + convertKey({ keyCode : key }));
+                    }
+                    for (let key of keys.reverse()) {
+                        sendSerial("KU:" + convertKey({ keyCode : key }));
+                    }
+                }
+            }
+
+            function getButton(e) {
+                switch (e.button) {
+                    default:
+                    case 0:
+                        return 1;
+                    case 1:
+                        return 4;
+                    case 2:
+                        return 2;
+                }
+            }
+
+            function getClipboardText() {
+                return new Promise((resolve, reject) => {
+                    var t = document.getElementById("paste");
+                    var d = document.getElementById("paste-container");
+                    var b = document.getElementById("do-paste");
+                    d.onclick = function(e) {
+                        if (e.target == e.currentTarget) {
+                            //resolve(t.value);
+                            d.setAttribute("class", "hidden");
+                            reject();
+                        }
+                    }
+                    b.onclick = function (e) {
+                        d.setAttribute("class", "hidden");
+                        resolve(t.value);
+                    }
+                    d.setAttribute("class", "hidden-v");
+                    t.focus();
+                });
+                
+            }
+
+            function getCoords(e) {
+                var rect = e.target.getBoundingClientRect();
+                var x = e.clientX - rect.left;
+                var y = e.clientY - rect.top;
+
+                return { x: Math.floor(x / rect.width * 32768), y: Math.floor(y / rect.height * 32768) };
+            }
+
+            var inSend = false;
+            var lines = [];
+
+            function sendDone(success) {
+                inSend = false;
+                if (lines.length > 0) {
+                    inSend = true;
+                    var text = lines.join("&")
+                    lines = [];
+                    AJAXPost("/input", text, sendDone);
+                }
+            }
+
+            function sendSerial(value) {
+                lines.push(value);
+                //console.log(value);
+                if (!inSend) {
+                    inSend = true;
+                    var text = lines.join("&")
+                    lines = [];
+                    AJAXPost("/input", text, sendDone);
+                }
+            }
+
+            function getScrollbarWidth() {
+                
+                const outer = document.createElement('div');
+                outer.style.visibility = 'hidden';
+                outer.style.overflow = 'scroll';
+                outer.style.msOverflowStyle = 'scrollbar';
+                document.body.appendChild(outer);
+
+                const inner = document.createElement('div');
+                outer.appendChild(inner);
+
+                const scrollbarWidth = (outer.offsetWidth - inner.offsetWidth);
+
+                outer.parentNode.removeChild(outer);
+
+                return scrollbarWidth;
+                
+            }
+
+			function streamRead(stream, count) {
+				if (stream.pos + count <= stream.data.length && count > 0) {
+					var data = [];
+					for (var i = 0; i < count; i++) {
+						data.push(stream.data[stream.pos]);
+						stream.pos++;
+					}
+					return data;
+				}
+				return null;
+			}
+
+			function streamRead4(stream)
+			{
+				if (stream.pos + 4 <= stream.data.length) {
+					var num = 0;
+					for (var i = 3; i >= 0; i--) {
+						num = (num << 8) | stream.data[stream.pos + i];
+					}
+					stream.pos += 4;;
+					return num;
+				}
+				return null;
+			}
+
+			function streamIsEOF(stream) {
+				return (stream.pos >= stream.data.length);
+			}
+
+
+            
+            function timeout(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+			function numberWithSpaces(x) {
+				return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+			}
+			var trafficBytes = 0;
+			async function fetchStream(url) {
+				while (true) {
+					try {
+						const response = await fetch(url);
+
+						if (!response.ok) {
+							throw new Error(`HTTP error! Status: ${response.status}`);
+						}
+
+						const reader = response.body.getReader();
+						let done = false;
+						while (!done) {
+							const { value, done: doneReading } = await reader.read();
+							done = doneReading;
+							trafficBytes += value.length;
+							//console.time("processFrame");
+							await processFrame(value);
+							//console.timeEnd("processFrame");
+							document.getElementById("traffic").innerText = numberWithSpaces(trafficBytes) + " bytes";
+						}
+					} catch {}
+				}
+			}
+
+			function loadImage(src){
+				return new Promise((resolve, reject) => {
+					let img = new Image();
+					img.onload = () => resolve(img);
+					img.onerror = function(e) { 
+						reject();
+					};
+					img.src = src;
+				});
+			}
+
+			var canvas = document.getElementById("screen");
+			var ctx = canvas.getContext("2d");
+			var stream = { data: [], pos: 0 };
+			async function processFrame(frame) {
+				
+				for (let b of frame) {
+					stream.data.push(b);
+				}
+
+				/*
+				var s = '';
+				for (let b of frame) {
+					s = s + "[" + b + "]";
+				}
+				console.log("Received frame: " + s.length, s);
+				*/
+
+				var paints = [];
+
+				var offset = 0;
+				//*
+				while (!streamIsEOF(stream)) {
+					var packetType = streamRead4(stream);
+					if (packetType == null) {
+						break;
+					}
+
+					if (packetType == 255) {
+						//console.log("Received empty");
+						offset = stream.pos;
+					} else if (packetType == 0) {
+						var width = streamRead4(stream);
+						var height = streamRead4(stream);
+						var length = streamRead4(stream);
+						var data = streamRead(stream, length);
+						if (width != null & height != null && length != null && data != null) {
+							offset = stream.pos;
+							//console.log("Received Full " + width + ", " + height + ", " + length);
+							var canvas = document.getElementById("screen");
+							canvas.setAttribute("width", width + "px");
+							canvas.setAttribute("height", height + "px");
+							ctx = canvas.getContext("2d");
+							const blob = new Blob([Uint8Array.from(data)], { type: 'image/jpeg' });
+							const url = URL.createObjectURL(blob);
+							var img = await loadImage(url);
+							ctx.drawImage(img, 0, 0);
+							URL.revokeObjectURL(url);
+						}
+						break;
+					} else if (packetType == 1) {
+						var x = streamRead4(stream);
+						var y = streamRead4(stream);
+						var width = streamRead4(stream);
+						var height = streamRead4(stream);
+						var length = streamRead4(stream);
+						var data = streamRead(stream, length);
+						if (x != null && y != null && width != null & height != null && length != null && data != null) {
+							//console.log("Received Part " + x + ", " + y + ", " + width + ", " + height + ", " + length);
+							offset = stream.pos;
+							//var canvas = document.getElementById("screen");
+							//ctx = canvas.getContext("2d");
+							const blob = new Blob([Uint8Array.from(data)], { type: 'image/jpeg' });
+							const url = URL.createObjectURL(blob);
+							var img = await loadImage(url);
+							//*
+							paints.push({
+								img: img,
+								x: x,
+								y: y,
+								url: url,
+							});//*/
+							//ctx.drawImage(img, x, y);
+							//URL.revokeObjectURL(url);
+						}
+					}
+				}
+
+				if (paints.length > 0){
+					
+					for(let paint of paints) {
+						ctx.drawImage(paint.img, paint.x, paint.y);
+						URL.revokeObjectURL(paint.url);
+					}
+				}
+
+				if (offset > 0) {
+					stream.data.splice(0, offset);
+				}
+				stream.pos = 0;
+				//*/
+				/*
+				
+				*/
+			}
+
+			fetchStream('/changes');
+			/*
+			var xhr = new XMLHttpRequest();
+			xhr.onreadystatechange = function() {
+				if (xhr.readyState == XMLHttpRequest.LOADING) {
+					// This state can be triggered multiple times between 0 and 4
+					if (xhr.status == 200) {
+						processNewData(xhr.response);
+					}
+				} else if (xhr.readyState == XMLHttpRequest.DONE) {
+					// Handle completion if needed, although in this scenario, ideally,
+					// we want the connection to stay open indefinitely
+				}
+			};
+
+			xhr.open('GET', '/changes');
+			xhr.send();
+
+			function processNewData(response) {
+				// Assume data chunks end with a specific delimiter like '\n' or a boundary string
+				// You can parse the responseText to extract new frames
+				console.log("New frame received:", response);
+			}
+			*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            var HID_KEY_NONE = 0x00;
+            var HID_KEY_A = 0x04;
+            var HID_KEY_B = 0x05;
+            var HID_KEY_C = 0x06;
+            var HID_KEY_D = 0x07;
+            var HID_KEY_E = 0x08;
+            var HID_KEY_F = 0x09;
+            var HID_KEY_G = 0x0A;
+            var HID_KEY_H = 0x0B;
+            var HID_KEY_I = 0x0C;
+            var HID_KEY_J = 0x0D;
+            var HID_KEY_K = 0x0E;
+            var HID_KEY_L = 0x0F;
+            var HID_KEY_M = 0x10;
+            var HID_KEY_N = 0x11;
+            var HID_KEY_O = 0x12;
+            var HID_KEY_P = 0x13;
+            var HID_KEY_Q = 0x14;
+            var HID_KEY_R = 0x15;
+            var HID_KEY_S = 0x16;
+            var HID_KEY_T = 0x17;
+            var HID_KEY_U = 0x18;
+            var HID_KEY_V = 0x19;
+            var HID_KEY_W = 0x1A;
+            var HID_KEY_X = 0x1B;
+            var HID_KEY_Y = 0x1C;
+            var HID_KEY_Z = 0x1D;
+            var HID_KEY_1 = 0x1E;
+            var HID_KEY_2 = 0x1F;
+            var HID_KEY_3 = 0x20;
+            var HID_KEY_4 = 0x21;
+            var HID_KEY_5 = 0x22;
+            var HID_KEY_6 = 0x23;
+            var HID_KEY_7 = 0x24;
+            var HID_KEY_8 = 0x25;
+            var HID_KEY_9 = 0x26;
+            var HID_KEY_0 = 0x27;
+            var HID_KEY_ENTER = 0x28;
+            var HID_KEY_ESCAPE = 0x29;
+            var HID_KEY_BACKSPACE = 0x2A;
+            var HID_KEY_TAB = 0x2B;
+            var HID_KEY_SPACE = 0x2C;
+            var HID_KEY_MINUS = 0x2D;
+            var HID_KEY_EQUAL = 0x2E;
+            var HID_KEY_BRACKET_LEFT = 0x2F;
+            var HID_KEY_BRACKET_RIGHT = 0x30;
+            var HID_KEY_BACKSLASH = 0x31;
+            var HID_KEY_EUROPE_1 = 0x32;
+            var HID_KEY_SEMICOLON = 0x33;
+            var HID_KEY_APOSTROPHE = 0x34;
+            var HID_KEY_GRAVE = 0x35;
+            var HID_KEY_COMMA = 0x36;
+            var HID_KEY_PERIOD = 0x37;
+            var HID_KEY_SLASH = 0x38;
+            var HID_KEY_CAPS_LOCK = 0x39;
+            var HID_KEY_F1 = 0x3A;
+            var HID_KEY_F2 = 0x3B;
+            var HID_KEY_F3 = 0x3C;
+            var HID_KEY_F4 = 0x3D;
+            var HID_KEY_F5 = 0x3E;
+            var HID_KEY_F6 = 0x3F;
+            var HID_KEY_F7 = 0x40;
+            var HID_KEY_F8 = 0x41;
+            var HID_KEY_F9 = 0x42;
+            var HID_KEY_F10 = 0x43;
+            var HID_KEY_F11 = 0x44;
+            var HID_KEY_F12 = 0x45;
+            var HID_KEY_PRINT_SCREEN = 0x46;
+            var HID_KEY_SCROLL_LOCK = 0x47;
+            var HID_KEY_PAUSE = 0x48;
+            var HID_KEY_INSERT = 0x49;
+            var HID_KEY_HOME = 0x4A;
+            var HID_KEY_PAGE_UP = 0x4B;
+            var HID_KEY_DELETE = 0x4C;
+            var HID_KEY_END = 0x4D;
+            var HID_KEY_PAGE_DOWN = 0x4E;
+            var HID_KEY_ARROW_RIGHT = 0x4F;
+            var HID_KEY_ARROW_LEFT = 0x50;
+            var HID_KEY_ARROW_DOWN = 0x51;
+            var HID_KEY_ARROW_UP = 0x52;
+            var HID_KEY_NUM_LOCK = 0x53;
+            var HID_KEY_KEYPAD_DIVIDE = 0x54;
+            var HID_KEY_KEYPAD_MULTIPLY = 0x55;
+            var HID_KEY_KEYPAD_SUBTRACT = 0x56;
+            var HID_KEY_KEYPAD_ADD = 0x57;
+            var HID_KEY_KEYPAD_ENTER = 0x58;
+            var HID_KEY_KEYPAD_1 = 0x59;
+            var HID_KEY_KEYPAD_2 = 0x5A;
+            var HID_KEY_KEYPAD_3 = 0x5B;
+            var HID_KEY_KEYPAD_4 = 0x5C;
+            var HID_KEY_KEYPAD_5 = 0x5D;
+            var HID_KEY_KEYPAD_6 = 0x5E;
+            var HID_KEY_KEYPAD_7 = 0x5F;
+            var HID_KEY_KEYPAD_8 = 0x60;
+            var HID_KEY_KEYPAD_9 = 0x61;
+            var HID_KEY_KEYPAD_0 = 0x62;
+            var HID_KEY_KEYPAD_DECIMAL = 0x63;
+            var HID_KEY_EUROPE_2 = 0x64;
+            var HID_KEY_APPLICATION = 0x65;
+            var HID_KEY_POWER = 0x66;
+            var HID_KEY_KEYPAD_EQUAL = 0x67;
+            var HID_KEY_F13 = 0x68;
+            var HID_KEY_F14 = 0x69;
+            var HID_KEY_F15 = 0x6A;
+            var HID_KEY_F16 = 0x6B;
+            var HID_KEY_F17 = 0x6C;
+            var HID_KEY_F18 = 0x6D;
+            var HID_KEY_F19 = 0x6E;
+            var HID_KEY_F20 = 0x6F;
+            var HID_KEY_F21 = 0x70;
+            var HID_KEY_F22 = 0x71;
+            var HID_KEY_F23 = 0x72;
+            var HID_KEY_F24 = 0x73;
+            var HID_KEY_EXECUTE = 0x74;
+            var HID_KEY_HELP = 0x75;
+            var HID_KEY_MENU = 0x76;
+            var HID_KEY_SELECT = 0x77;
+            var HID_KEY_STOP = 0x78;
+            var HID_KEY_AGAIN = 0x79;
+            var HID_KEY_UNDO = 0x7A;
+            var HID_KEY_CUT = 0x7B;
+            var HID_KEY_COPY = 0x7C;
+            var HID_KEY_PASTE = 0x7D;
+            var HID_KEY_FIND = 0x7E;
+            var HID_KEY_MUTE = 0x7F;
+            var HID_KEY_VOLUME_UP = 0x80;
+            var HID_KEY_VOLUME_DOWN = 0x81;
+            var HID_KEY_LOCKING_CAPS_LOCK = 0x82;
+            var HID_KEY_LOCKING_NUM_LOCK = 0x83;
+            var HID_KEY_LOCKING_SCROLL_LOCK = 0x84;
+            var HID_KEY_KEYPAD_COMMA = 0x85;
+            var HID_KEY_KEYPAD_EQUAL_SIGN = 0x86;
+            var HID_KEY_KANJI1 = 0x87;
+            var HID_KEY_KANJI2 = 0x88;
+            var HID_KEY_KANJI3 = 0x89;
+            var HID_KEY_KANJI4 = 0x8A;
+            var HID_KEY_KANJI5 = 0x8B;
+            var HID_KEY_KANJI6 = 0x8C;
+            var HID_KEY_KANJI7 = 0x8D;
+            var HID_KEY_KANJI8 = 0x8E;
+            var HID_KEY_KANJI9 = 0x8F;
+            var HID_KEY_LANG1 = 0x90;
+            var HID_KEY_LANG2 = 0x91;
+            var HID_KEY_LANG3 = 0x92;
+            var HID_KEY_LANG4 = 0x93;
+            var HID_KEY_LANG5 = 0x94;
+            var HID_KEY_LANG6 = 0x95;
+            var HID_KEY_LANG7 = 0x96;
+            var HID_KEY_LANG8 = 0x97;
+            var HID_KEY_LANG9 = 0x98;
+            var HID_KEY_ALTERNATE_ERASE = 0x99;
+            var HID_KEY_SYSREQ_ATTENTION = 0x9A;
+            var HID_KEY_CANCEL = 0x9B;
+            var HID_KEY_CLEAR = 0x9C;
+            var HID_KEY_PRIOR = 0x9D;
+            var HID_KEY_RETURN = 0x9E;
+            var HID_KEY_SEPARATOR = 0x9F;
+            var HID_KEY_OUT = 0xA0;
+            var HID_KEY_OPER = 0xA1;
+            var HID_KEY_CLEAR_AGAIN = 0xA2;
+            var HID_KEY_CRSEL_PROPS = 0xA3;
+            var HID_KEY_EXSEL = 0xA4;
+            var HID_KEY_KEYPAD_00 = 0xB0;
+            var HID_KEY_KEYPAD_000 = 0xB1;
+            var HID_KEY_THOUSANDS_SEPARATOR = 0xB2;
+            var HID_KEY_DECIMAL_SEPARATOR = 0xB3;
+            var HID_KEY_CURRENCY_UNIT = 0xB4;
+            var HID_KEY_CURRENCY_SUBUNIT = 0xB5;
+            var HID_KEY_KEYPAD_LEFT_PARENTHESIS = 0xB6;
+            var HID_KEY_KEYPAD_RIGHT_PARENTHESIS = 0xB7;
+            var HID_KEY_KEYPAD_LEFT_BRACE = 0xB8;
+            var HID_KEY_KEYPAD_RIGHT_BRACE = 0xB9;
+            var HID_KEY_KEYPAD_TAB = 0xBA;
+            var HID_KEY_KEYPAD_BACKSPACE = 0xBB;
+            var HID_KEY_KEYPAD_A = 0xBC;
+            var HID_KEY_KEYPAD_B = 0xBD;
+            var HID_KEY_KEYPAD_C = 0xBE;
+            var HID_KEY_KEYPAD_D = 0xBF;
+            var HID_KEY_KEYPAD_E = 0xC0;
+            var HID_KEY_KEYPAD_F = 0xC1;
+            var HID_KEY_KEYPAD_XOR = 0xC2;
+            var HID_KEY_KEYPAD_CARET = 0xC3;
+            var HID_KEY_KEYPAD_PERCENT = 0xC4;
+            var HID_KEY_KEYPAD_LESS_THAN = 0xC5;
+            var HID_KEY_KEYPAD_GREATER_THAN = 0xC6;
+            var HID_KEY_KEYPAD_AMPERSAND = 0xC7;
+            var HID_KEY_KEYPAD_DOUBLE_AMPERSAND = 0xC8;
+            var HID_KEY_KEYPAD_VERTICAL_BAR = 0xC9;
+            var HID_KEY_KEYPAD_DOUBLE_VERTICAL_BAR = 0xCA;
+            var HID_KEY_KEYPAD_COLON = 0xCB;
+            var HID_KEY_KEYPAD_HASH = 0xCC;
+            var HID_KEY_KEYPAD_SPACE = 0xCD;
+            var HID_KEY_KEYPAD_AT = 0xCE;
+            var HID_KEY_KEYPAD_EXCLAMATION = 0xCF;
+            var HID_KEY_KEYPAD_MEMORY_STORE = 0xD0;
+            var HID_KEY_KEYPAD_MEMORY_RECALL = 0xD1;
+            var HID_KEY_KEYPAD_MEMORY_CLEAR = 0xD2;
+            var HID_KEY_KEYPAD_MEMORY_ADD = 0xD3;
+            var HID_KEY_KEYPAD_MEMORY_SUBTRACT = 0xD4;
+            var HID_KEY_KEYPAD_MEMORY_MULTIPLY = 0xD5;
+            var HID_KEY_KEYPAD_MEMORY_DIVIDE = 0xD6;
+            var HID_KEY_KEYPAD_PLUS_MINUS = 0xD7;
+            var HID_KEY_KEYPAD_CLEAR = 0xD8;
+            var HID_KEY_KEYPAD_CLEAR_ENTRY = 0xD9;
+            var HID_KEY_KEYPAD_BINARY = 0xDA;
+            var HID_KEY_KEYPAD_OCTAL = 0xDB;
+            var HID_KEY_KEYPAD_DECIMAL_2 = 0xDC;
+            var HID_KEY_KEYPAD_HEXADECIMAL = 0xDD;
+            var HID_KEY_CONTROL_LEFT = 0xE0;
+            var HID_KEY_SHIFT_LEFT = 0xE1;
+            var HID_KEY_ALT_LEFT = 0xE2;
+            var HID_KEY_GUI_LEFT = 0xE3;
+            var HID_KEY_CONTROL_RIGHT = 0xE4;
+            var HID_KEY_SHIFT_RIGHT = 0xE5;
+            var HID_KEY_ALT_RIGHT = 0xE6;
+            var HID_KEY_GUI_RIGHT = 0xE7;
+
+            var keyMap = {};
+            var charMap = {};
+
+            function createKeyMap() {
+                for (var i = 65; i <= 90; i++) {
+                    keyMap[i] = HID_KEY_A + (i - 65);
+                }
+                keyMap[48] = HID_KEY_0;
+                for (var i = 49; i <= 57; i++) {
+                    keyMap[i] = HID_KEY_1 + (i - 49);
+                }
+                for (var i = 112; i <= 123; i++) {
+                    keyMap[i] = HID_KEY_F1 + (i - 112);
+                }
+                for (var i = 96; i <= 105; i++) {
+                    keyMap[i] = HID_KEY_KEYPAD_0 + (i - 96);
+                }
+                keyMap[192] = HID_KEY_GRAVE;
+                keyMap[16] = HID_KEY_SHIFT_LEFT;
+                keyMap[17] = HID_KEY_CONTROL_LEFT;
+                keyMap[18] = HID_KEY_ALT_LEFT;
+                keyMap[32] = HID_KEY_SPACE;
+                keyMap[173] = HID_KEY_MINUS;
+                keyMap[61] = HID_KEY_EQUAL;
+                keyMap[220] = HID_KEY_BACKSLASH;
+                keyMap[191] = HID_KEY_SLASH;
+                keyMap[219] = HID_KEY_BRACKET_LEFT;
+                keyMap[221] = HID_KEY_BRACKET_RIGHT;
+                keyMap[222] = HID_KEY_APOSTROPHE;
+                keyMap[59] = HID_KEY_SEMICOLON;
+                keyMap[188] = HID_KEY_COMMA;
+                keyMap[190] = HID_KEY_PERIOD;
+
+                keyMap[107] = HID_KEY_KEYPAD_ADD;
+                keyMap[109] = HID_KEY_KEYPAD_SUBTRACT;
+                keyMap[106] = HID_KEY_KEYPAD_MULTIPLY;
+                keyMap[111] = HID_KEY_KEYPAD_DIVIDE;
+                keyMap[110] = HID_KEY_KEYPAD_DECIMAL;
+
+                keyMap[144] = HID_KEY_NUM_LOCK;
+                
+                keyMap[13] = HID_KEY_ENTER;
+                keyMap[27] = HID_KEY_ESCAPE;
+                keyMap[9] = HID_KEY_TAB;
+                keyMap[8] = HID_KEY_BACKSPACE;
+
+                keyMap[45] = HID_KEY_INSERT;
+                keyMap[46] = HID_KEY_DELETE;
+                keyMap[36] = HID_KEY_HOME;
+                keyMap[35] = HID_KEY_END;
+                keyMap[33] = HID_KEY_PAGE_UP;
+                keyMap[34] = HID_KEY_PAGE_DOWN;
+
+                keyMap[91] = HID_KEY_GUI_LEFT;
+                keyMap[30] = HID_KEY_CAPS_LOCK;
+
+                keyMap[44] = HID_KEY_PRINT_SCREEN;
+                keyMap[145] = HID_KEY_SCROLL_LOCK;
+                keyMap[19] = HID_KEY_PAUSE;
+
+                keyMap[38] = HID_KEY_ARROW_UP;
+                keyMap[40] = HID_KEY_ARROW_DOWN;
+                keyMap[37] = HID_KEY_ARROW_LEFT;
+                keyMap[39] = HID_KEY_ARROW_RIGHT;
+
+            }
+            function createCharMap() {
+                for (var i = 'a'.charCodeAt(0); i <= 'z'.charCodeAt(0); i++)
+                {
+                    charMap[String.fromCharCode(i)] = { key: HID_KEY_A + (i - 'a'.charCodeAt(0))};
+                }
+                for (var i = 'A'.charCodeAt(0); i <= 'Z'.charCodeAt(0); i++)
+                {
+                    charMap[String.fromCharCode(i)] = { key: HID_KEY_A + (i - 'A'.charCodeAt(0)), shift: true};
+                }
+
+                charMap['0'] = { key: HID_KEY_0};
+                for (var i = '1'.charCodeAt(0); i <= '9'.charCodeAt(0); i++)
+                {
+                    charMap[String.fromCharCode(i)] = { key: HID_KEY_1 + (i - '1'.charCodeAt(0))};
+                }
+
+                charMap[')'] = { key: HID_KEY_0, shift: true};
+                charMap['('] = { key: HID_KEY_9, shift: true};
+                charMap['*'] = { key: HID_KEY_8, shift: true};
+                charMap['&'] = { key: HID_KEY_7, shift: true};
+                charMap['^'] = { key: HID_KEY_6, shift: true};
+                charMap['%'] = { key: HID_KEY_5, shift: true};
+                charMap['$'] = { key: HID_KEY_4, shift: true};
+                charMap['#'] = { key: HID_KEY_3, shift: true};
+                charMap['@'] = { key: HID_KEY_2, shift: true};
+                charMap['!'] = { key: HID_KEY_1, shift: true};
+
+                charMap['`'] = { key: HID_KEY_GRAVE};
+                charMap['~'] = { key: HID_KEY_GRAVE, shift: true};
+
+                charMap['\n'] = { key: HID_KEY_ENTER};
+                charMap[' '] = { key: HID_KEY_SPACE, shift: true};
+                charMap['\t'] = { key: HID_KEY_TAB};
+                charMap[';'] = { key: HID_KEY_SEMICOLON};
+                charMap[':'] = { key: HID_KEY_SEMICOLON, shift: true};
+                charMap[','] = { key: HID_KEY_COMMA};
+                charMap['<'] = { key: HID_KEY_COMMA, shift: true};
+                charMap['.'] = { key: HID_KEY_PERIOD};
+                charMap['>'] = { key: HID_KEY_PERIOD, shift: true};
+                charMap['/'] = { key: HID_KEY_SLASH};
+                charMap['?'] = { key: HID_KEY_SLASH, shift: true};
+
+                charMap['-'] = { key: HID_KEY_MINUS};
+                charMap['_'] = { key: HID_KEY_MINUS, shift: true};
+                charMap['='] = { key: HID_KEY_EQUAL};
+                charMap['+'] = { key: HID_KEY_EQUAL, shift: true};
+                charMap['['] = { key: HID_KEY_BRACKET_LEFT};
+                charMap['{'] = { key: HID_KEY_BRACKET_LEFT, shift: true};
+                charMap[']'] = { key: HID_KEY_BRACKET_RIGHT};
+                charMap['}'] = { key: HID_KEY_BRACKET_RIGHT, shift: true};
+                charMap['\\'] = { key: HID_KEY_BACKSLASH};
+                charMap['|'] = { key: HID_KEY_BACKSLASH, shift: true};
+                charMap['\''] = { key: HID_KEY_APOSTROPHE};
+                charMap['\"'] = { key: HID_KEY_APOSTROPHE, shift: true};
+
+
+                //Russian
+
+                var RussianL = "йцукенгшщзхъфывапролджэячсмитьбюё";
+                var RussianU = "ЙЦУКЕНГШЩЗХЪФЫВАПРОЛДЖЭЯЧСМИТЬБЮЁ№";
+                var EnglishL = "qwertyuiop[]asdfghjkl;'zxcvbnm,.`";
+                var EnglishU = "QWERTYUIOP{}ASDFGHJKL:\"ZXCVBNM<>~#";
+
+                var N = 0;
+                for (let c of RussianL) {
+                    if (EnglishL[N] in charMap)
+                    {
+                        var value = charMap[EnglishL[N]];
+                        charMap[c] = { key: value.key, shift: ("shift" in value ? value.shift : false), lang: true};
+                    }
+
+                    N++;
+                }
+
+                N = 0;
+                for (let c of RussianU) {
+                    if (EnglishU[N] in charMap)
+                    {
+                        var value = charMap[EnglishU[N]];
+                        charMap[c] = { key: value.key, shift: ("shift" in value ? value.shift : false), lang: true};
+                    }
+
+                    N++;
+                }
+            }
+
+            createKeyMap();
+            createCharMap();
+
+            function convertChar(c) {
+                if (c in charMap) {
+                    return charMap[c];
+                }
+                return null;
+            }
+
+            function convertKey(e) {
+                if (e.keyCode in keyMap) {
+                    return keyMap[e.keyCode];
+                }
+                return HID_KEY_NONE;
+            }
+            
+
+
+            var ajaxUploadProgess = null;
+            function clsXMLHTTP_A() {
+                this.xmlhttp = null;
+            };
+
+            clsXMLHTTP_A.prototype.SendRequestPost = function (url, post_text, callbackFunction) {
+                this.xmlhttp = null;
+                if (window.XMLHttpRequest) {
+                    this.xmlhttp = new XMLHttpRequest();
+                }
+                else if (window.ActiveXObject) {
+                    this.xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+                }
+                if (this.xmlhttp != null) {
+                    this.xmlhttp.tag = callbackFunction;
+                    this.xmlhttp.onreadystatechange = Function(" callback_A(this) ");
+                    this.xmlhttp.open("POST", url, true);
+                    /*
+                    var post_text = "";
+                    for (var key in param_array) {
+                        if (post_text.length > 0) {
+                            post_text += '&';
+                        }
+                        post_text += encodeURIComponent(key) + '=' + encodeURIComponent(param_array[key]);
+                    }*/
+                    //alert(post_text);
+                    this.xmlhttp.setRequestHeader('Content-Type', 'text/plain');
+                    this.xmlhttp.upload.onprogress = ajaxUploadProgess;
+                    this.xmlhttp.send(post_text);
+
+                }
+            };
+
+            function callback_A(req) {
+                if (req.readyState == 4) {
+                    var callbackFunction = req.tag;
+                    if (req.status == 200) {
+                        callbackFunction(true);
+                    }
+                    else {
+                        callbackFunction(false);
+                    }
+                }
+            }
+
+            function AJAXPost(url, post_text, callbackFunction) {
+                HTTP_A.SendRequestPost(url, post_text, callbackFunction);
+            }
+            
+            var HTTP_A = new clsXMLHTTP_A();
+
+        </script>
+    </body>
+</html>
