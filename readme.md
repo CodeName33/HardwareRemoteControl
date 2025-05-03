@@ -1,3 +1,43 @@
+# IMPORTANT PROJECT UPDATE!
+
+Introducing HadwareRemoteControlCP - crossplatform web-server/GUI. Support Windows/Linux-x64/Linux-arm64 platforms.
+
+Usage:
+    
+    HadwareRemoteControlCP [parameters]
+
+    Can run without parameters (will ask in console)
+    Parameters:
+        listcams - list all capture devices in system
+        listports - list all serial ports in system
+        help - show little help
+
+        -c=NAME - Serial port name (like COM3 for windows or /dev/ttyXXX for linux, can be enumerated with 'listports' parameter)
+        -p=INDEX - Capture device index (can be enumerated with 'listcams' parameter)
+        -w=PORT_NUMBER - port number for web-server
+        -gui - GUI mode
+        -q=NUMBER - 0-100 JPEG quality for images (default 60)
+        -v:w=VALUE - Preferred image width for capture device
+        -v:h=VALUE - Preferred image height for capture device
+        -v:f=VALUE - Preferred fps for capture device
+        -v:c=VALUE - Preferred 4 letter format for capture device (like MJPG, NV12 etc.)
+        -v:b=VALUE - Capture buffer size (frames count, default 4)
+Just start it with your settings? for example:
+
+    HadwareRemoteControlCP -c=COM13 -p=2 -w=1800
+
+As web-server port is set to 1800, enter in browser 
+
+    http://[localhost or machine address]:1800/
+and have fun.
+
+I've tested it on Windows and arm64 linux (old device Orange Pi Win Plus). 
+
+## Orange Pi Notes
+
+As we need to decode capture stream, find changes and reencode to JPEG, Old Orange Pi Can't do it as fast as we want and we have only 5-8 fps + input delay, so I set -v:b=1 to make input delay lower (about 0.5~0.8 second). Also I set -v:c to MJPG and -v:f 30, because by default it choose YUY2 with maximum 5 fps input (my capture device limitation in YUY2)
+
+
 # About
 
 This is software part for project HardwareRemoteControl. It physically connects two computers and allow one to control another. Any OS on controlled PC (you can even enter BIOS and reinstall OS), only Windows on controlling PC.
