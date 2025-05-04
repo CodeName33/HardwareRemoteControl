@@ -22,7 +22,7 @@ Usage:
         -v:f=VALUE - Preferred fps for capture device
         -v:c=VALUE - Preferred 4 letter format for capture device (like MJPG, NV12 etc.)
         -v:b=VALUE - Capture buffer size (frames count, default 4)
-        -ffmpeg - ffmpeg mode (only for web-server). If your capture device suport MJPG stream, this flag will use ffmpeg to copy strem to clients direct. Good for slow devices. But it will not analyse changes and always send full frames (traffic warning).
+        -ffmpeg - ffmpeg mode (only for web-server, linux only). If your capture device suport MJPG stream, this flag will use ffmpeg to copy strem to clients direct. Good for slow devices. But it will not analyse changes and always send full frames (traffic warning). ffmpeg must be installed
 Just start it with your settings? for example:
 
     HadwareRemoteControlCP -c=COM13 -p=2 -w=1800
@@ -38,7 +38,7 @@ I've tested it on Windows and arm64 linux (old device Orange Pi Win Plus).
 
 ~~As we need to decode capture stream, find changes and reencode to JPEG, Old Orange Pi Can't do it as fast as we want and we have only 5-8 fps + input delay, so I set -v:b=1 to make input delay lower (about 0.5~0.8 second). Also I set -v:c to MJPG and -v:f 30, because by default it choose YUY2 with maximum 5 fps input (my capture device limitation in YUY2)~~
 **UPDATE**
-For slow devices as web-server you can use ffmpeg mode (parameter -ffmpeg). If your capture device supports MJPG stream in this mode stream will be copied directly to clients, without frame decoding. It's very fast but in this mode there are no changes analyzed and always full frames send (traffic warning). You can set lower fps falue (parameter -v:f) for traffic economy.
+For slow devices (linux only) as web-server you can use ffmpeg mode (parameter -ffmpeg). If your capture device supports MJPG stream in this mode stream will be copied directly to clients, without frame decoding. It's very fast but in this mode there are no changes analyzed and always full frames send (traffic warning). You can set lower fps falue (parameter -v:f) for traffic economy. ffmpeg must be installed
 
 # Warning
 Never open web-server port to internet directly. It's not safe because there is no authorization and encryption. Use NGINX with HTTPS and Auth for proxy to this service.
