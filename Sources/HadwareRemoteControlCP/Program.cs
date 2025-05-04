@@ -362,6 +362,63 @@ namespace hardware_remote_control_cp
             }
         }
 
+        class FrameBuff<T> where T : class
+        {
+            object locker = new object();
+            T? data = null;
+            long counter = 0;
+            ManualResetEvent pushEvent = new ManualResetEvent(false);
+            object getLocker = new object();
+
+            public void addFrame(T frame)
+            {
+                lock (locker)
+                {
+                    data = frame;
+                    counter++;
+                    pushEvent.Set();
+                }
+            }
+
+            public T? getFrameWait(ref long c)
+            {
+                lock (locker)
+                {
+                    if (c != counter)
+                    {
+                        c = counter;
+                        return data;
+                    }
+                }
+
+                lock (getLocker)
+                {
+                    lock (locker)
+                    {
+                        if (c != counter)
+                        {
+                            c = counter;
+                            return data;
+                        }
+                    }
+
+                    while (pushEvent.WaitOne())
+                    {
+                        lock (locker)
+                        {
+                            pushEvent.Reset();
+                            if (c != counter)
+                            {
+                                c = counter;
+                                return data;
+                            }
+                        }
+                    }
+                }
+                return default;
+            }
+        }
+
         class FrameEnc
         {
             public Mat frame;
@@ -434,33 +491,42 @@ namespace hardware_remote_control_cp
 
 
 
-        static void WebServerMode(int camIndex, int webPort, VideoParameters videoParameters)
+        static void WebServerMode(int camIndex, int webPort, VideoParameters videoParameters, bool ffmpegMode)
         {
-            Console.Write($"Video Device Init ({camIndex})...");
-            var capture = new VideoCapture(camIndex);
-            if (videoParameters.Width > 0)
+            
+            VideoCapture? capture = null;
+
+            if (ffmpegMode)
             {
-                capture.FrameWidth = videoParameters.Width;
+                Console.WriteLine($"FFMpegMode ({camIndex})");
             }
-            if (videoParameters.Height > 0)
+            else
             {
-                capture.FrameHeight = videoParameters.Height;
+                Console.Write($"Video Device Init ({camIndex})...");
+                capture = new VideoCapture(camIndex);
+                if (videoParameters.Width > 0)
+                {
+                    capture.FrameWidth = videoParameters.Width;
+                }
+                if (videoParameters.Height > 0)
+                {
+                    capture.FrameHeight = videoParameters.Height;
+                }
+                if (videoParameters.FourCC.Length > 0)
+                {
+                    capture.FourCC = videoParameters.FourCC;
+                }
+                if (videoParameters.FPS > 0)
+                {
+                    capture.Fps = videoParameters.FPS;
+                }
+                if (videoParameters.BufferSize >= 0)
+                {
+                    capture.BufferSize = videoParameters.BufferSize;
+                }
+                Console.WriteLine(" OK");
             }
-            if (videoParameters.FourCC.Length > 0)
-            {
-                capture.FourCC = videoParameters.FourCC;//OpenCvSharp.FourCC.MJPG;
-            }
-            if (videoParameters.FPS > 0)
-            {
-                capture.Fps = videoParameters.FPS;
-            }
-            if (videoParameters.BufferSize >= 0)
-            {
-                capture.BufferSize = videoParameters.BufferSize;
-            }
-            //capture.Open(camIndex);
             var running = true;
-            Console.WriteLine(" OK");
 
             string ListenAddress = $"http://*:{webPort}/";
 
@@ -474,42 +540,137 @@ namespace hardware_remote_control_cp
             object clientLocker = new object();
             int clientCount = 0;
             FrameBuffMat matBuff = new FrameBuffMat();
+            FrameBuff<byte[]> rawBuff = new FrameBuff<byte[]>();
 
 
-            Console.WriteLine($"Capture properties:\n\tSourceFPS = {capture.Fps}\n\tBufferSize = {capture.BufferSize}\n\tFourCC = {capture.FourCC}");
+            if (ffmpegMode)
+            {
+                Console.WriteLine($"Capture properties:\n\tSourceFPS = {videoParameters.FPS}");
+            }
+            else
+            {
+                Console.WriteLine($"Capture properties:\n\tSourceFPS = {capture.Fps}\n\tBufferSize = {capture.BufferSize}\n\tFourCC = {capture.FourCC}");
+            }
             ImageEncodingParam[] ep = { new ImageEncodingParam(ImwriteFlags.JpegQuality, videoParameters.Quality) };
 
-            new Thread(() => {
-                
-                long[] Measures = new long[10];
-                long MeasuresCount = 0;
-
-                var updateBegin = DateTime.Now;
-
-
-                while (running)
+            if (ffmpegMode)
+            {
+                new Thread(() =>
                 {
-                    if (clientCount > 0)
+                    var process = new Process
                     {
-                        capture.Fps = 30;
-                        var frame = new Mat();
-                        if (capture.Read(frame))
+                        StartInfo = new ProcessStartInfo
                         {
-                            matBuff.addFrame(frame);
+                            FileName = "ffmpeg",
+                            Arguments = $"-f v4l2 -input_format mjpeg -video_size {videoParameters.Width}x{videoParameters.Height} -framerate {videoParameters.FPS} -i /dev/video{camIndex} -c:v copy -r {videoParameters.FPS} -f mjpeg -",
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true,
+                            UseShellExecute = false,
+                            CreateNoWindow = true
+                        }
+                    };
 
-                            MeasuresCount++;
+                    process.Start();
+                    Console.WriteLine($"FFMpeg started");
+
+                    var ebuffer = new byte[1024];
+                    var buffer = new byte[4096];
+                    var ms = new MemoryStream();
+                    bool isRecording = false;
+                    byte lb = 0;
+                    long FrameNumber = 0;
+                    new Thread(() =>
+                    {
+                        while (true)
+                        {
+                            var bytesRead = process.StandardError.BaseStream.Read(ebuffer, 0, ebuffer.Length);
+                        }
+                    }).Start(); ;
+
+                    while (true)
+                    {
+                        var bytesRead = process.StandardOutput.BaseStream.Read(buffer, 0, buffer.Length);
+                        if (bytesRead == 0) break;
+
+                        //foreach (var b in buffer)
+                        for (int i = 0; i < bytesRead; i++)
+                        {
+                            var b = buffer[i];
+                            if (b == 0xD8)
+                            {
+                                if (lb == 0xFF)
+                                {
+                                    ms.WriteByte(lb);
+                                    isRecording = true;
+                                }
+                            }
+                            else if (b == 0xD9)
+                            {
+                                if (lb == 0xFF)
+                                {
+                                    ms.WriteByte(b);
+                                    isRecording = false;
+                                    byte[] imageBytes = ms.ToArray();
+                                    ms.SetLength(0);
+
+                                    if (imageBytes.Length > 4)
+                                    {
+                                        rawBuff.addFrame(imageBytes);
+                                        FrameNumber++;
+                                        Status.SetValue(0, $"Source Frames = {FrameNumber}");
+                                        Status.Update();
+                                    }
+                                    //Console.WriteLine($"Frame: {imageBytes.Length} bytes");
+                                }
+                            }
+
+                            if (isRecording)
+                            {
+                                ms.WriteByte(b);
+                            }
+                            lb = b;
+                        }
+                    }
+
+                    process.WaitForExit();
+                    Console.WriteLine($"FFMpeg exited");
+                }).Start();
+            }
+            else
+            {
+                new Thread(() =>
+                {
+
+                    long[] Measures = new long[10];
+                    long MeasuresCount = 0;
+
+                    var updateBegin = DateTime.Now;
+
+
+                    while (running)
+                    {
+                        if (clientCount > 0)
+                        {
+                            capture.Fps = 30;
+                            var frame = new Mat();
+                            if (capture.Read(frame))
+                            {
+                                matBuff.addFrame(frame);
+
+                                MeasuresCount++;
+                            }
+
+                            Status.SetValue(0, $"Source Frames = {MeasuresCount}");
+                            Status.Update();
+                        }
+                        else
+                        {
+                            Thread.Sleep(100);
                         }
 
-                        Status.SetValue(0, $"Source Frames = {MeasuresCount}");
-                        Status.Update();
                     }
-                    else
-                    {
-                        Thread.Sleep(100);
-                    }
-
-                }
-            }).Start();
+                }).Start();
+            }
 
             while (running)
             {
@@ -756,6 +917,48 @@ namespace hardware_remote_control_cp
                                 lImage?.Dispose();
                             }
                             break;
+                        case "/stream":
+                            {
+                                try
+                                {
+                                    context.Response.ContentType = "multipart/x-mixed-replace; boundary=image-boundary";
+
+                                    if (!ffmpegMode)
+                                    {
+                                        context.Response.StatusCode = 404;
+                                        context.Response.Close();
+                                        break;
+                                    }
+
+                                    long c = 0;
+                                    while (true)
+                                    {
+                                        byte[]? jb = rawBuff.getFrameWait(ref c);
+
+                                        if (jb != null && jb.Length > 0)
+                                        {
+                                            var boundary = Encoding.ASCII.GetBytes("\r\n--image-boundary\r\n");
+                                            context.Response.OutputStream.Write(boundary);
+                                            context.Response.OutputStream.Write(Encoding.ASCII.GetBytes("Content-Type: image/jpeg\r\n\r\n"));
+                                            context.Response.OutputStream.Write(jb);
+                                        }
+                                        else
+                                        {
+                                            Thread.Sleep(10);
+                                        }
+                                    }
+                                }
+                                catch
+                                {
+
+                                }
+                                finally
+                                {
+                                    context.Response.Close();
+                                }
+
+                                break;
+                            }
                         case "/":
                             {
                                 string indexFileName = System.IO.Path.Combine(GetAppPath(), System.IO.Path.GetFileNameWithoutExtension(GetAppExeName()) + ".htm");
@@ -766,6 +969,16 @@ namespace hardware_remote_control_cp
                                 if (File.Exists(indexFileName))
                                 {
                                     var htmlBytes = File.ReadAllBytes(indexFileName);
+
+                                    if (ffmpegMode)
+                                    {
+                                        var html = Encoding.UTF8.GetString(htmlBytes);
+                                        html = html.Replace("<canvas ", "<img src=\"/stream\" ");
+                                        html = html.Replace("</canvas>", "");
+                                        html = html.Replace("ffmpegMode = false", "ffmpegMode = true");
+                                        htmlBytes = Encoding.UTF8.GetBytes(html);
+                                    }
+
                                     context.Response.ContentType = "text/html";
                                     context.Response.OutputStream.Write(htmlBytes);
                                     context.Response.Close();
@@ -1021,6 +1234,8 @@ namespace hardware_remote_control_cp
             string portName = "";
             VideoParameters videoParameters = new VideoParameters();
             bool isGUI = false;
+            bool testMode = false;
+            bool ffmpegMode = false;
 
             foreach (var arg in args)
             {
@@ -1058,6 +1273,12 @@ namespace hardware_remote_control_cp
                             break;
                         case "-v:b":
                             videoParameters.BufferSize = value.ToInt32();
+                            break;
+                        case "-t":
+                            testMode = true;
+                            break;
+                        case "-ffmpeg":
+                            ffmpegMode = true;
                             break;
                     }
                 }
@@ -1135,6 +1356,17 @@ namespace hardware_remote_control_cp
                 }
             }
 
+            if (testMode)
+            {
+                //var rc = new RawCapture();
+                //rc.CaptureRawMJPEGFrames(camIndex);
+                //MjpgCapture.StartCapture($"/dev/video{camIndex}");
+                //var cap = new MjpegStreamProcessor();
+                //cap.ProcessMjpegStreamAsync("ffmpeg", $"-f v4l2 -input_format mjpeg -i /dev/video{camIndex} -video_size {videoParameters.Width}x{videoParameters.Height} -framerate {videoParameters.FPS} -c:v copy -vframes 50 -f mjpeg -").Wait();
+                Console.WriteLine("Test Done");
+                return;
+            }
+
 
             Console.Write($"Serial Port ({portName})...");
             //*
@@ -1154,7 +1386,7 @@ namespace hardware_remote_control_cp
 
             if (webPort > 0)
             {
-                WebServerMode(camIndex, webPort, videoParameters);
+                WebServerMode(camIndex, webPort, videoParameters, ffmpegMode);
                 return;
             }
             else if (isGUI)
