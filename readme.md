@@ -12,8 +12,8 @@ Usage:
         listports - list all serial ports in system
         help - show little help
 
-        -c=NAME - Serial port name (like COM3 for windows or /dev/ttyXXX for linux, can be enumerated with 'listports' parameter)
-        -p=INDEX - Capture device index (can be enumerated with 'listcams' parameter)
+        -c=NAME - Capture device index (can be enumerated with 'listcams' parameter, in ffmpeg mode name of camera used, in windows it can be found using command "ffmpeg -list_devices true -f dshow -i dummy")
+        -p=INDEX - Serial port name (like COM3 for windows or /dev/ttyXXX for linux, can be enumerated with 'listports' parameter)
         -w=PORT_NUMBER - port number for web-server
         -gui - GUI mode
         -q=NUMBER - 0-100 quality for JPEG/MJPEG (default 60)
@@ -97,3 +97,4 @@ You can print box for your device. Look in **Sources/3D Printed Box** folder. I'
 # License
 
 My project parts is MIT, but it uses modified AForge lib version and it's GPL/LGPL
+
