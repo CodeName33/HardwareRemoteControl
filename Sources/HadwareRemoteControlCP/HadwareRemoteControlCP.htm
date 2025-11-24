@@ -142,6 +142,7 @@
             </div>
         </div>
         <script>
+			var ffmpegMode = false;
             var displayType = "stretch";
             var scrollSize = getScrollbarWidth() + 5;
             document.getElementById('screen').ondragstart = function() { return false; };
@@ -401,11 +402,8 @@
 				});
 			}
 
-			var canvas = document.getElementById("screen");
-			var ctx = canvas.getContext("2d");
-			var stream = { data: [], pos: 0 };
 			async function processFrame(frame) {
-				
+					
 				for (let b of frame) {
 					stream.data.push(b);
 				}
@@ -496,7 +494,13 @@
 				*/
 			}
 
-			fetchStream('/changes');
+			if (!ffmpegMode) {
+				var canvas = document.getElementById("screen");
+				var ctx = canvas.getContext("2d");
+				var stream = { data: [], pos: 0 };
+				
+				fetchStream('/changes');
+			}
 			/*
 			var xhr = new XMLHttpRequest();
 			xhr.onreadystatechange = function() {
@@ -781,6 +785,7 @@
                 keyMap[18] = HID_KEY_ALT_LEFT;
                 keyMap[32] = HID_KEY_SPACE;
                 keyMap[173] = HID_KEY_MINUS;
+                keyMap[189] = HID_KEY_MINUS;
                 keyMap[61] = HID_KEY_EQUAL;
                 keyMap[220] = HID_KEY_BACKSLASH;
                 keyMap[191] = HID_KEY_SLASH;
@@ -788,6 +793,7 @@
                 keyMap[221] = HID_KEY_BRACKET_RIGHT;
                 keyMap[222] = HID_KEY_APOSTROPHE;
                 keyMap[59] = HID_KEY_SEMICOLON;
+                keyMap[186] = HID_KEY_SEMICOLON;
                 keyMap[188] = HID_KEY_COMMA;
                 keyMap[190] = HID_KEY_PERIOD;
 

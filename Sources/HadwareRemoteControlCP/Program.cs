@@ -17,6 +17,7 @@ using Gdk;
 using System.Net;
 using System.Text;
 using System.Collections.Concurrent;
+using System.Linq.Expressions;
 
 
 namespace hardware_remote_control_cp
@@ -25,18 +26,52 @@ namespace hardware_remote_control_cp
     {
         static SerialPort serialPort;
 
-        static List<int> GetAvailableWebcams()
+        static List<string> GetAvailableWebcams(bool ffmpegMode)
         {
-            var availableIndices = new List<int>();
+            var availableIndices = new List<string>();
 
-            for (int index = 0; index < 16; index++)
+            if (ffmpegMode && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                using (var capture = new VideoCapture(index))
+                var process = new Process
                 {
-                    if (capture.IsOpened())
+                    StartInfo = new ProcessStartInfo
                     {
-                        availableIndices.Add(index);
-                        capture.Release();
+                        FileName = "ffmpeg",
+                        Arguments = $"-list_devices true -f dshow -i dummy -hide_banner",
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    }
+                };
+                process.Start();
+
+                while (true)
+                {
+                    var line = process.StandardError.ReadLine();
+                    if (line == null)
+                    {
+                        break;
+                    }
+
+                    if (line.Contains("(video)"))
+                    {
+                        line = line.CutLeft("(video)");
+                        line = line.CutRight("]").Trim();
+                        availableIndices.Add(line);
+                    }
+                }
+            }
+            else
+            {
+                for (int index = 0; index < 16; index++)
+                {
+                    using (var capture = new VideoCapture(index))
+                    {
+                        if (capture.IsOpened())
+                        {
+                            availableIndices.Add($"{index}");
+                            capture.Release();
+                        }
                     }
                 }
             }
@@ -193,6 +228,16 @@ namespace hardware_remote_control_cp
             {
                 Right = "";
             }
+        }
+
+        public static string CutLeft(this string Text, string Delimiter)
+        {
+            return Text.Split(Delimiter, 2)[0];
+        }
+
+        public static string CutRight(this string Text, string Delimiter)
+        {
+            return Text.Split(Delimiter, 2).Last();
         }
 
         private static void SendSerial(string Value, int Delay)
@@ -429,10 +474,15 @@ namespace hardware_remote_control_cp
         {
             public int Width = 1920;
             public int Height = 1080;
+            public int outputFPS = -1;
             public int FPS = 30;
+            public bool Recode = false;
             public string FourCC = "";
             public int BufferSize = -1;
             public int Quality = 60;
+
+            public int OutputFPS => (outputFPS == -1 ? FPS : outputFPS );
+
         }
 
         static class Status
@@ -454,7 +504,7 @@ namespace hardware_remote_control_cp
             {
                 lock (locker)
                 {
-                    Data[index] = value.ToString();
+                    Data[index] = $"{value}";
                 }
             }
 
@@ -491,7 +541,7 @@ namespace hardware_remote_control_cp
 
 
 
-        static void WebServerMode(int camIndex, int webPort, VideoParameters videoParameters, bool ffmpegMode)
+        static void WebServerMode(string camIndex, int webPort, VideoParameters videoParameters, bool ffmpegMode)
         {
             
             VideoCapture? capture = null;
@@ -557,83 +607,116 @@ namespace hardware_remote_control_cp
             {
                 new Thread(() =>
                 {
-                    var process = new Process
+                    var recodeArgs = "-c:v copy";
+                    if (videoParameters.Recode)
                     {
-                        StartInfo = new ProcessStartInfo
-                        {
-                            FileName = "ffmpeg",
-                            Arguments = $"-f v4l2 -input_format mjpeg -video_size {videoParameters.Width}x{videoParameters.Height} -framerate {videoParameters.FPS} -i /dev/video{camIndex} -c:v copy -r {videoParameters.FPS} -f mjpeg -",
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true,
-                            UseShellExecute = false,
-                            CreateNoWindow = true
-                        }
-                    };
-
-                    process.Start();
-                    Console.WriteLine($"FFMpeg started");
-
-                    var ebuffer = new byte[1024];
-                    var buffer = new byte[4096];
-                    var ms = new MemoryStream();
-                    bool isRecording = false;
-                    byte lb = 0;
-                    long FrameNumber = 0;
-                    new Thread(() =>
+                        recodeArgs = $"-vcodec mjpeg -q:v {31 - (int)(videoParameters.Quality * 0.31)}";
+                    }
+                    var arguments = $"-f v4l2 { (videoParameters.Recode ? "" : "-input_format mjpeg") } -video_size {videoParameters.Width}x{videoParameters.Height} -framerate {videoParameters.FPS} -i /dev/video{camIndex} -tune zerolatency {recodeArgs} -r {videoParameters.OutputFPS} -f mjpeg -";
+                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        while (true)
-                        {
-                            var bytesRead = process.StandardError.BaseStream.Read(ebuffer, 0, ebuffer.Length);
-                        }
-                    }).Start(); ;
+                        arguments = $"-f dshow {(videoParameters.Recode ? "" : "-vcodec mjpeg") } -video_size {videoParameters.Width}x{videoParameters.Height} -framerate {videoParameters.FPS} -i \"video={camIndex}\" -tune zerolatency {recodeArgs} -r {videoParameters.OutputFPS} -f mjpeg -";
+
+                        File.WriteAllText(System.IO.Path.Combine(GetAppPath(), "ffmpeg.run.txt"), $"ffmpeg {arguments}");
+                    }
 
                     while (true)
                     {
-                        var bytesRead = process.StandardOutput.BaseStream.Read(buffer, 0, buffer.Length);
-                        if (bytesRead == 0) break;
-
-                        //foreach (var b in buffer)
-                        for (int i = 0; i < bytesRead; i++)
+                        var process = new Process
                         {
-                            var b = buffer[i];
-                            if (b == 0xD8)
+                            StartInfo = new ProcessStartInfo
                             {
-                                if (lb == 0xFF)
+                                FileName = "ffmpeg",
+                                Arguments = arguments,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true,
+                                UseShellExecute = false,
+                                CreateNoWindow = true
+                            }
+                        };
+
+                        process.Start();
+                        Console.WriteLine($"FFMpeg started");
+
+                        var ebuffer = new byte[4096];
+                        var buffer = new byte[8192];
+                        var ms = new MemoryStream();
+                        bool isRecording = false;
+                        byte lb = 0;
+                        long FrameNumber = 0;
+                        new Thread(() =>
+                        {
+                            try
+                            {
+                                while (true)
                                 {
-                                    ms.WriteByte(lb);
-                                    isRecording = true;
+                                    var bytesRead = process.StandardError.BaseStream.Read(ebuffer, 0, ebuffer.Length);
+                                    if (bytesRead == 0)
+                                    {
+                                        break;
+                                    }
+                                    //Thread.Sleep(100);
                                 }
                             }
-                            else if (b == 0xD9)
+                            catch { }
+                        }).Start();
+
+                        //*
+                        while (true)
+                        {
+                            var bytesRead = process.StandardOutput.BaseStream.Read(buffer, 0, buffer.Length);
+                            //*
+                            if (bytesRead == 0)
                             {
-                                if (lb == 0xFF)
+                                break;
+                            }
+
+                            //foreach (var b in buffer)
+                            for (int i = 0; i < bytesRead; i++)
+                            {
+                                var b = buffer[i];
+                                if (b == 0xD8)
+                                {
+                                    if (lb == 0xFF)
+                                    {
+                                        ms.WriteByte(lb);
+                                        isRecording = true;
+                                    }
+                                }
+                                else if (b == 0xD9)
+                                {
+                                    if (lb == 0xFF)
+                                    {
+                                        ms.WriteByte(b);
+                                        isRecording = false;
+                                        byte[] imageBytes = ms.ToArray();
+                                        ms.SetLength(0);
+
+                                        if (imageBytes.Length > 4)
+                                        {
+                                            rawBuff.addFrame(imageBytes);
+                                            FrameNumber++;
+                                            Status.SetValue(0, $"Source Frames = {FrameNumber}");
+                                            Status.Update();
+                                        }
+                                        //Console.WriteLine($"Frame: {imageBytes.Length} bytes");
+                                    }
+                                }
+
+                                if (isRecording)
                                 {
                                     ms.WriteByte(b);
-                                    isRecording = false;
-                                    byte[] imageBytes = ms.ToArray();
-                                    ms.SetLength(0);
-
-                                    if (imageBytes.Length > 4)
-                                    {
-                                        rawBuff.addFrame(imageBytes);
-                                        FrameNumber++;
-                                        Status.SetValue(0, $"Source Frames = {FrameNumber}");
-                                        Status.Update();
-                                    }
-                                    //Console.WriteLine($"Frame: {imageBytes.Length} bytes");
                                 }
-                            }
+                                lb = b;
+                            }//*/
+                        }//*/
 
-                            if (isRecording)
-                            {
-                                ms.WriteByte(b);
-                            }
-                            lb = b;
-                        }
+                        process.WaitForExit();
+                        Console.WriteLine();
+                        Console.WriteLine($"FFMpeg exited. Waiting 1 sec...");
+                        Thread.Sleep(1000);
+                        Console.WriteLine($"Restarting FFMpeg");
                     }
-
-                    process.WaitForExit();
-                    Console.WriteLine($"FFMpeg exited");
                 }).Start();
             }
             else
@@ -1004,7 +1087,7 @@ namespace hardware_remote_control_cp
             capture.Release();
         }
 
-        static void GUIMode(int camIndex, VideoParameters videoParameters)
+        static void GUIMode(string camIndex, VideoParameters videoParameters)
         {
             try
             {
@@ -1230,7 +1313,7 @@ namespace hardware_remote_control_cp
             Cv2.SetLogLevel(LogLevel.SILENT);
 
             int webPort = 0;
-            int camIndex = -1;
+            string camIndex = "";
             string portName = "";
             VideoParameters videoParameters = new VideoParameters();
             bool isGUI = false;
@@ -1245,7 +1328,7 @@ namespace hardware_remote_control_cp
                     switch (key)
                     {
                         case "-c":
-                            camIndex = value.ToInt32();
+                            camIndex = value;
                             break;
                         case "-p":
                             portName = value;
@@ -1271,11 +1354,17 @@ namespace hardware_remote_control_cp
                         case "-v:f":
                             videoParameters.FPS = value.ToInt32();
                             break;
+                        case "-v:of":
+                            videoParameters.outputFPS = value.ToInt32();
+                            break;
                         case "-v:b":
                             videoParameters.BufferSize = value.ToInt32();
                             break;
                         case "-t":
                             testMode = true;
+                            break;
+                        case "-recode":
+                            videoParameters.Recode = true;
                             break;
                         case "-ffmpeg":
                             ffmpegMode = true;
@@ -1286,7 +1375,7 @@ namespace hardware_remote_control_cp
                 {
                     if (arg == "listcams")
                     {
-                        var deviceIndices = GetAvailableWebcams();
+                        var deviceIndices = GetAvailableWebcams(ffmpegMode);
                         Console.WriteLine($"Webcams:");
                         foreach (var index in deviceIndices)
                         {
@@ -1327,16 +1416,19 @@ namespace hardware_remote_control_cp
                 portName = deviceNames[Console.ReadLine().ToInt32() - 1];
             }
 
-            if (camIndex == -1)
+            if (camIndex.Length == 0)
             {
-                var deviceIndices = GetAvailableWebcams();
+                
+                var deviceIndices = GetAvailableWebcams(ffmpegMode);
                 Console.WriteLine($"Enter capture device number from list (or use command line -c=INDEX):");
+                int n = 1;
                 foreach (var index in deviceIndices)
                 {
-                    Console.WriteLine($"{index}. Capture Device {index}");
+                    Console.WriteLine($"{n}. Capture Device '{index}'");
+                    n++;
                 }
                 Console.Write("Index: ");
-                camIndex = Console.ReadLine().ToInt32();
+                camIndex = deviceIndices[Console.ReadLine().ToInt32() - 1];
             }
 
             if (!isGUI && webPort <= 0)
